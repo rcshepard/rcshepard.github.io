@@ -42,9 +42,7 @@
 		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 	}).addTo(map);
 
-  // see more basemap options at https://leaflet-extras.github.io/leaflet-providers/preview/
-
-  // Read markers data from data.csv
+  // Read markers data from data.csv -- you can change the name as needed
   $.get('data.csv', function(csvString) {
 
     // Use PapaParse to convert string to array of objects
@@ -55,6 +53,7 @@
     for (var i in data) {
       var row = data[i];
 
+	    //very simple marker for now, only pulling the name field for the popup, but this could be set to bring in anything like images, urls, etc
       var marker = L.marker([row.Latitude, row.Longitude], {
         opacity: 1
       }).bindPopup(row.Name);
