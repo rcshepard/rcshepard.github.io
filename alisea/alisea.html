@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<!-- notes 
+Rob Shepard, GIS Librarian @ UChicago
+Created for Alisea McCloud
+-->
+<html>
+  <head>
+    <title>Visualizing USCT</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- INCLUDES -->
+
+      <script src="https://cdn.jsdelivr.net/leaflet/1.0.0-rc.3/leaflet-src.js"></script>
+      <link rel="stylesheet" href="https://rshepard2.github.io/placing/public/leaflet-1/leaflet.css" />
+
+      <script src="https://rshepard2.github.io/placing/public/leafletSlider-1.0.2/leaflet.SliderControl.min.js"></script>
+
+      <!-- include fuse first, then the leaflet plugins that use fuse searching -->
+      <script src="https://rshepard2.github.io/placing/public/fuse-1.2.1/fuse.min.js"></script>
+      <script src="https://rshepard2.github.io/placing/public/leafletFuseSearch-noVersion/leafletfuse.js"></script>
+      <link rel="stylesheet" href="https://rshepard2.github.io/placing/public/leafletFuseSearch-noVersion/leafletfuse.css" type="text/css"/>
+      <!-- jquery scripts and css -->
+      <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+      <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+      <link rel="stylesheet" href="https://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" type="text/css">
+	  
+      <!-- Include this library for mobile touch support (not tested) -->
+      <script src="https://rshepard2.github.io/placing/public/jqueryUiTouchPunch-0.2.2/jquery.ui.touch-punch.min.js"></script>
+
+      <!-- include json data points -->
+      <script src="https://rcshepard.github.io/alisea/lines.js"></script>
+	  <script src="https://rcshepard.github.io/alisea/origins.js"></script>
+	  <script src="https://rcshepard.github.io/alisea/enlists.js"></script>
+
+	  <link rel="stylesheet" type="text/css" href="https://rshepard2.github.io/placing/css/style.css">
+	  <link rel="stylesheet" type="text/css" href="https://rshepard2.github.io/placing/css/navwrap.css">
+  </head>
+
+
+  <body>
+
+    <div id="map" style="width: 100%; height: 650px"></div>
+<!--<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>. -->
+    <script>
+      // set up with openstreetmaps
+	  
+	  	  var myIcon = L.icon({
+    iconUrl: 'my-icon.png',
+    iconRetinaUrl: 'my-icon@2x.png',
+    iconSize: [1, 1],
+    iconAnchor: [1, 1],
+    popupAnchor: [-1, -1]
+});
+	  
+
+	 var grayscale = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Source: Esri',
+	maxZoom: 13
+});
+      var map = L.map('map', {
+	  center: [36.892990, -85.024081],
+	  zoom: 6,
+	  layers: [grayscale] 
+	  });
+
+      // onEachFeature generate a popup for each location
+      // those params are coming automatically from the geoJson method
+      var onEachFeature = function(feature, layer) {
+        if (feature.properties) {
+          var prop = feature.properties;
+          // make a cool little html popup with properties
+            var popup = '<h3>'+prop['FNAME']+' '+prop['LNAME']+'</h3>'+'<strong>Birthplace: </strong>'+prop['CTYORIGN']+'<br><strong>Rec Station: </strong>'+prop['RECSTATION']+'<br><br><i>details from USCT Register</i>';
+            // add known info about event to the description
+          
+          // you must create a layer property on each feature or else
+          // the search results won't know where the item is on the map / layer
+          feature.layer = layer;
+          layer.bindPopup(popup, {maxWidth: "auto"});
+        }
+      }; // end onEachFeature
+
+      // used by the generic "all locations" layer
+      var blueCircleMarkers = {
+        radius: 4,
+        fillColor: "#00AEEF",
+        color: "#3978BF",
+        weight: 1,
+        opacity: 0.8,
+        fillOpacity: 0.5
+      };
+
+      // used by the timesliding layer
+      var orangeCircleMarkers = {
+        radius: 5,
+        fillColor: "#ED1C24",
+        color: "#ED1C24",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.7
+      };
+
+      // used by the searching layer - made them yellow instead of green
+      var greenCircleMarkers = {
+        radius: 5,
+        fillColor: "#ffff00",
+        color: "#286933",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.7
+      };
+	  
+	  var selectedmarker = {
+	  radius: 6,
+        fillColor: "#f7971c",
+        color: "#f7971c",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.9
+      };
+	  
+	  	  var refmaterial = {
+	  radius: 6,
+        fillColor: "#f7971c",
+        color: "#f7971c",
+        weight: 0,
+        opacity: 0,
+        fillOpacity: 0.0
+      };
+
+      // generate a layer of markers for all the locations--- I havent set this up properly yet, will discuss with Alisea
+  //    L.geoJson(origins, {style:refmaterial}).addTo(map);
+
+       //now make a timeline layer that the slider can manipulate - REMOVED
+      var timelineLayer = L.geoJson(origins, {
+        onEachFeature: onEachFeature,
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, orangeCircleMarkers);
+        }
+      });
+
+      // make a search layer
+      // now make a timeline layer that the slider can manipulate
+      var searchLayer = L.geoJson(origins, {
+        onEachFeature: onEachFeature,
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, greenCircleMarkers);
+        }
+      });
+      // searchLayer.addTo(map);
+
+
+      // create the slider   - REMOVED
+      var sliderControl = L.control.sliderControl({
+          position: "topright",
+          layer: timelineLayer,
+          range: true // gives it a bottom and a top slider
+      });
+
+ //     map.addControl(sliderControl);
+  //    sliderControl.startSlider(); // initialize
+
+      // Add fuse search control
+      var searchOptions = {
+        position: 'topleft',
+        title: 'Search',
+        placeholder: 'Example: John Smith',
+        maxResultLength: 10,
+        caseSensitive: false,
+        showInvisibleFeatures: true,
+        layerToToggle: searchLayer,
+        threshold: 0.5, // default is .5, will match imperfect results
+        showResultFct: function(feature, container) {
+          props = feature.properties;
+          var name = L.DomUtil.create('b', null, container);
+          name.innerHTML = props.LNAME;
+
+          container.appendChild(L.DomUtil.create('br', null, container));
+
+          var cat = props.LNAME ? props.FNAME : props.CTYORIGN,
+              info = cat;
+          container.appendChild(document.createTextNode(info));
+        }
+      };
+      var searchControl = L.control.fuseSearch(searchOptions);
+      map.addControl(searchControl);
+      searchControl.indexFeatures(lines, ['LNAME']);
+
+      displayFeatures(lines, searchLayer);
+
+      function displayFeatures(features, layer) {
+        var popup = L.DomUtil.create('div', 'tiny-popup', map.getContainer());
+        for (var id in features) {
+          var feat = features[id];
+          var cat = feat.properties.categorie;
+          var site = L.geoJson(feat, {
+            pointToLayer: function(feature, latLng) {
+              var marker = L.marker(latLng, {
+			    icon: myIcon,
+                keyboard: false,
+                riseOnHover: true
+              });
+              if (! L.touch) {
+                marker.on('mouseover', function(position) {
+                  // TODO can put text in here when hovering search
+                  // popup.innerHTML = 'Testing';
+                  // L.DomUtil.setPosition(popup, pos);
+                  // L.DomUtil.addClass(popup, 'visible');
+                }).on('mouseout', function(position) {
+                  L.DomUtil.removeClass(popup, 'visible');
+                });
+              }
+              return marker;
+            },
+            onEachFeature: onEachFeature
+          });
+          if (layer !== undefined) {
+              layer.addLayer(site);
+          }
+        }
+        return layer;
+      };
+	  //adds a layer for some other geojson, just change out "washgeojson" with another file
+	  
+
+	 var lines = new L.geoJson(lines, {
+	  onEachFeature: onEachFeature,
+pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, orangeCircleMarkers);
+    }}).addTo(map);
+	
+		 var origins = new L.geoJson(origins, {
+	  onEachFeature: onEachFeature,
+pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, greenCircleMarkers);
+    }}).addTo(map);
+	
+		 var enlists = new L.geoJson(enlists, {
+	  onEachFeature: onEachFeature,
+pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, blueCircleMarkers);
+    }});
+
+
+	  
+	  		var overlays = {
+			"Lines": lines,
+			"Place of Birth": origins,
+			"Place of Enlistment": enlists
+	  };
+	  
+			var baseMaps = {
+			"Basemap": grayscale
+			};
+	  
+	  L.control.layers(baseMaps, overlays, {collapsed:false}).addTo(map);
+
+    </script>
+	
+  </body>
+</html>
