@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapping Chicagoland Data Miner Prototype</title>
+
+    <script src="https://leaflet.github.io/Leaflet.draw/docs/examples/libs/leaflet-src.js"></script>
+    <link rel="stylesheet" href="https://leaflet.github.io/Leaflet.draw/docs/examples/libs/leaflet.css"/>
+
+    <script src="https://leaflet.github.io/Leaflet.draw/src/Leaflet.draw.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/Leaflet.Draw.Event.js"></script>
+    <link rel="stylesheet" href="https://leaflet.github.io/Leaflet.draw/src/leaflet.draw.css"/>
+
+    <script src="https://leaflet.github.io/Leaflet.draw/src/Toolbar.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/Tooltip.js"></script>
+
+    <script src="https://leaflet.github.io/Leaflet.draw/src/ext/GeometryUtil.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/ext/LatLngUtil.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/ext/LineUtil.Intersect.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/ext/Polygon.Intersect.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/ext/Polyline.Intersect.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/ext/TouchEvents.js"></script>
+
+    <script src="https://leaflet.github.io/Leaflet.draw/src/draw/DrawToolbar.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/draw/handler/Draw.Feature.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/draw/handler/Draw.SimpleShape.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/draw/handler/Draw.Polyline.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/draw/handler/Draw.Marker.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/draw/handler/Draw.Circle.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/draw/handler/Draw.CircleMarker.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/draw/handler/Draw.Polygon.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/draw/handler/Draw.Rectangle.js"></script>
+
+
+    <script src="https://leaflet.github.io/Leaflet.draw/src/edit/EditToolbar.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/edit/handler/EditToolbar.Edit.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/edit/handler/EditToolbar.Delete.js"></script>
+
+    <script src="https://leaflet.github.io/Leaflet.draw/src/Control.Draw.js"></script>
+
+    <script src="https://leaflet.github.io/Leaflet.draw/src/edit/handler/Edit.Poly.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/edit/handler/Edit.SimpleShape.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/edit/handler/Edit.Rectangle.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/edit/handler/Edit.Marker.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/edit/handler/Edit.CircleMarker.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.draw/src/edit/handler/Edit.Circle.js"></script>
+	
+	<style>
+	#export {
+            position: relative;
+            bottom:20px;
+            left:10px;
+            z-index:100;
+            background:white;
+            color:black;
+            padding:6px;
+            border-radius:4px;
+            font-family: 'Helvetica Neue';
+            cursor: pointer;
+            font-size:12px;
+            text-decoration:none;
+        }
+        #export {
+            bottom:90px;
+        }
+</style>
+</head>
+<body>
+<img src="https://rcshepard.github.io/uchi_lib2.png"</img>
+<div id="map" style="width: 1000px; height: 800px; border: 1px solid #ccc"></div>
+ <div class="col-md-6 mx-auto py-2 text-center">
+      <form>
+        <input class="btn btn-primary btn-lg text-wrap" form="mainform" id="submit" name="submit" onclick="storeLayer()" type="submit" value="Click here to submit your finished layer">
+      </form>
+    </div>
+
+ <div class="col-md-6 mx-auto py-2 text-center">
+      <form>
+        <input class="btn btn-primary btn-lg text-wrap" form="mainform" id="submit" name="submit" onclick="addToLayer()" type="submit" value="Send with your text annotations">
+      </form>
+    </div>
+
+<a href='#' id='export'>Export Features:</a>
+
+<script>
+    var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            osm = L.tileLayer(osmUrl, { maxZoom: 18, attribution: osmAttrib }),
+            map = new L.Map('map', { center: new L.LatLng(41.7895774, -87.5942953), zoom: 12 }),
+            drawnItems = L.featureGroup().addTo(map);
+    L.control.layers({
+        'openstreetmap': osm.addTo(map),
+        "MC layer": L.tileLayer('https://allmaps.xyz/maps/da95db3eee82b08d/{z}/{x}/{y}.png', {
+            attribution: 'Mapping Chicagoland 2024'
+        })
+    }, { 'drawlayer': drawnItems }, { position: 'topleft', collapsed: false }).addTo(map);
+    map.addControl(new L.Control.Draw({
+        edit: {
+            featureGroup: drawnItems,
+            poly: {
+                allowIntersection: false
+            }
+        },
+        draw: {
+            polygon: {
+                allowIntersection: false,
+                showArea: true
+            }
+        }
+    }));
+	
+	    var getDescription = function(layer) {
+        var description = prompt('please, give this object a name', 'geometry name');
+        return description;
+    };
+
+    map.on(L.Draw.Event.CREATED, function (event) {
+        var layer = event.layer;
+		var description = getDescription(layer);
+		if (description == 'geometry description') {
+		layer.bindPopup('-- no description provided --');
+		} else if (description == '') {
+		layer.bindPopup('-- no description provided --');
+		} else {
+		layer.bindTooltip(description, {permanent:true, direction:'top'})
+		};
+		
+        drawnItems.addLayer(layer);
+	
+		//what I'm trying to 
+		
+		});
+		
+
+	function storeLayer() {
+	var userdata = drawnItems.toGeoJSON();
+	//var usertext = layer.description;
+	var convertedData = "text/json;charset=utf-8" + encodeURIComponent(JSON.stringify(userdata));
+	document.getElementById("export").setAttribute("value", "data:" + convertedData);
+	//document.getElementById("export").setAttribute("value", "data:" + convertedData + ", properties: {%22description%22: {%22" + usertext + "%22}");
+	console.log(convertedData);
+	}
+	   
+	
+	//writing a function here to try to append the user-added text info
+	function addToLayer() {
+	var userdata = drawnItems.toGeoJSON() + usertext;
+	//var usertext = layer.description;
+	var convertedData = "text/json;charset=utf-8" + encodeURIComponent(JSON.stringify(userdata));
+	document.getElementById("export").setAttribute("value", "data:" + convertedData);
+	//document.getElementById("export").setAttribute("value", "data:" + convertedData + ", properties: {%22description%22: {%22" + usertext + "%22}");
+	console.log(convertedData);
+	}
+	 
+
+
+</script>
+</body>
+</html>
