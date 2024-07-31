@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Leaflet Multi-Layer Marker Cluster Example</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<!-- Leaflet MarkerCluster CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+<script src="g20152020.js"></script>
+<script src="g20202024.js"></script>
+<style>
+       #map {
+           height: 900px;
+       }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<!-- Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- Leaflet MarkerCluster JavaScript -->
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<script>
+       // Initialize the map and set its view
+       var map = L.map('map').setView([38, -98], 5);
+       // Add a tile layer
+       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+	maxZoom: 16
+}).addTo(map);
+       // Sample GeoJSON data for Layer 1
+
+       // Sample GeoJSON data for Layer 2
+
+       // Initialize the marker cluster groups
+       var markersLayer1 = L.markerClusterGroup();
+       var markersLayer2 = L.markerClusterGroup();
+       // Add GeoJSON data to the marker cluster group for Layer 1
+       L.geoJSON(geojsonData, {
+           onEachFeature: function (feature, layer) {
+               layer.bindPopup(feature.properties.name);
+           }
+       }).eachLayer(function (layer) {
+           markersLayer1.addLayer(layer);
+       });
+       // Add GeoJSON data to the marker cluster group for Layer 2
+       L.geoJSON(geojsonData2, {
+           onEachFeature: function (feature, layer) {
+               layer.bindPopup(feature.properties.name);
+           }
+       }).eachLayer(function (layer) {
+           markersLayer2.addLayer(layer);
+       });
+       // Add the marker cluster groups to the map
+       map.addLayer(markersLayer1);
+       map.addLayer(markersLayer2);
+       // Layer control
+       var overlayMaps = {
+           "2015-2020": markersLayer1,
+           "2020-2024": markersLayer2
+       };
+       L.control.layers(null, overlayMaps, {collapsed:false}).addTo(map);
+</script>
+</body>
+</html>
