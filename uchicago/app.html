@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Time-Filtered Map with Clustered Markers (GeoJSON)</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<style>
+   #slider { margin: 50px; }
+   #map { height: 780px; width: 100%; }
+   
+</style>
+</head>
+<body>
+<div id="map"></div><div id="slider"></div>
+
+
+<script>
+ // Initialize the map
+ const map = L.map('map').setView([17.2303031, -73.151641], 3); // Initial center
+ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+   maxZoom: 18,
+   attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+ }).addTo(map);
+ // Define color mapping based on type
+ const typeColors = {
+   "play": "blue",
+   "performance": "green",
+   "puppet show": "red"
+ };
+ let geojsonData; // Variable to store GeoJSON data
+ // Load GeoJSON data
+ fetch("https://rcshepard.github.io/vsdata2ifneeded.geojson")
+   .then(response => response.json())
+   .then(data => {
+     console.log("GeoJSON data loaded:", data); //log check
+     geojsonData = data; // Store GeoJSON data
+     initializeSlider();
+     updateMap(1931, 2023); // Initialize with default years
+   });
+ // Create a slider for time filtering
+ function initializeSlider() {
+   const slider = document.getElementById('slider');
+   noUiSlider.create(slider, {
+     start: [1931, 2023],
+     connect: true,
+     range: {
+       min: 1931,
+       max: 2023
+     },
+     step: 1,
+     tooltips: [true, true],
+     format: {
+       to: value => Math.round(value),
+       from: value => Number(value)
+     }
+   });
+   slider.noUiSlider.on('update', function (values) {
+     updateMap(parseInt(values[0]), parseInt(values[1]));
+   });
+ }
+ // Function to update map based on time filter
+ function updateMap(startYear, endYear) {
+   // Remove only existing data layers, keep base tile layer
+   map.eachLayer(layer => {
+     if (layer instanceof L.MarkerClusterGroup) {
+       map.removeLayer(layer);
+     }
+   });
+   // Create a new marker cluster group
+   const markers = L.markerClusterGroup();
+   // Filter GeoJSON data and add to map
+   L.geoJSON(geojsonData, {
+     filter: function(feature) {
+       const year = parseInt(feature.properties.year);
+	//   console.log("Filtering feature:", feature, "Year:", year);
+       return year >= startYear && year <= endYear;
+     },
+     pointToLayer: function(feature, latlng) {
+       const type = feature.properties.type;
+       const color = typeColors[type] || "gray"; // Default color if type is not in the color map
+	//   console.log("Creating marker for:", feature.properties.name); //log
+       return L.circleMarker(latlng, {
+         radius: 8, // Static size as we're just counting occurrences
+         fillColor: color,
+         color: "black",
+         weight: 1,
+         opacity: 1,
+         fillOpacity: 0.6
+       }).bindPopup('<h3>'+feature.properties.name+'</h3>Type: '+feature.properties.type+' ');
+     }
+   }).eachLayer(layer => markers.addLayer(layer));
+   // Add the cluster group to the map
+   map.addLayer(markers);
+ }
+</script>
+</body>
+</html>
