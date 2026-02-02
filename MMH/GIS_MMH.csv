@@ -1,6 +1,6 @@
 ID,NAME,URL,ADDRESS,CITY,STATE,ZIP,LONGITUDE,LATITUDE,AGENCY_INDIVIDUAL,NUM_PROVIDERS,VIRTUAL,MEDICAID,PMH_C,,,,,,
 101,Empowered Therapy,https://empoweredtherapy.org/hello-perinatal-therapy/?utm_term=perinatal%20therapy%20chicago&utm_campaign=General+Search+(2023)&utm_source=adwords&utm_medium=ppc&hsa_acc=1526443178&hsa_cam=20034293684&hsa_grp=163480594557&hsa_ad=702200384799&hsa_src=g&hsa_tgt=kwd-2311738479283&hsa_kw=perinatal%20therapy%20chicago&hsa_mt=p&hsa_net=adwords&hsa_ver=3&gad_source=1&gclid=CjwKCAjwnPS-BhBxEiwAZjMF0nJhgALXXiBwN3uZeMCdnvQSDUlQ8AoWziGSCp9oNv3qglWokpADXxoCdPAQAvD_BwE,155 Michigan Ave Suite 444,Chicago,IL,60601,-87.62434807,41.88497765,Agency,2,Y,N,Y,,,,,,
-102,Women's Mental Health and Reproductive Psychiatry at UIC,https://www.psych.uic.edu/clinical/adult-services/womens-mental-health-and-reproductive-psychiatry,912 South Wood Street,Chicago,IL,60612,-87.67145403,41.86988041,Agency,5,N,Y,N,,,,,,
+102,Womens Mental Health and Reproductive Psychiatry at UIC,https://www.psych.uic.edu/clinical/adult-services/womens-mental-health-and-reproductive-psychiatry,912 South Wood Street,Chicago,IL,60612,-87.67145403,41.86988041,Agency,5,N,Y,N,,,,,,
 103,Flourish Counseling & Wellness,https://womenscounselingchicago.com/,"1901 N Clybourn Ave, Suite 304",Chicago,IL,60614,-87.65607961,41.91567641,Agency,11,Y,N,Y,,,,,,
 104,COMPASS Northwestern Medicine ,https://www.nm.org/conditions-and-care-areas/womens-health/obgyn/obstetrics/postnatal-care/compass,"Northwestern Memorial Hospital, Arkes Pavilion, 676 North St. Clair Street, Floor 10, Suite 1000",Chicago,IL,60611,-87.62276146,41.89453348,Agency,5,N,Y,Y,,,,,,
 105,Perinatal Mental Health Center of Chicago,https://www.pmhcchicago.com/,3759 N Ravenswood Ave #226C,Chicago,IL,60613,-87.67366928,41.95016681,Agency,3,Y,N,Y,,,,,,
@@ -72,3 +72,4 @@ ID,NAME,URL,ADDRESS,CITY,STATE,ZIP,LONGITUDE,LATITUDE,AGENCY_INDIVIDUAL,NUM_PROV
 314,"Nadia DeLeon, LPC, PMH-C",https://psidirectory.com/listing/nadia-deleon-lpc-pmh-c-15758.html,Virtual: 3717 N Ravenswood Ave,Chicago,IL,60613,-87.6736526,41.94945145,Individual,1,Y,N,Y,,,,,,
 315,Thriving Path,https://thrivingpath.com/about-thriving-path/,"Virtual: 1525 E 53RD ST, SUITE #911",Chicago,IL,60615,-87.58819575,41.79956052,Agency,1,Y,N,Y,,,,,,
 316,"Alexia Evangelodimos, LCPC, PMH-C",https://www.merakicounselingchicago.com/,Virtual: 3320 W Foster Ave,Chicago,IL,60625,-87.71208958,41.97573853,Individual,1,Y,N,Y,,,,,,
+
