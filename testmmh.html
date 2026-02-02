@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Chicagoland Maternal Mental Health Providers (Proof of Concept)</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <!-- Leaflet MarkerCluster CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+  />
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+    .controls-container {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 10px 12px;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      font-size: 14px;
+      max-width: 260px;
+    }
+    .controls-container h3 {
+      margin: 0 0 6px 0;
+      font-size: 16px;
+    }
+    .controls-container label {
+      display: block;
+      margin: 2px 0;
+    }
+    .provider-label {
+      font-weight: 700;
+      font-size: 11px;
+      color: #2b2b2b;
+      text-align: center;
+    }
+    .provider-popup {
+      font-size: 13px;
+      line-height: 1.3;
+    }
+    .provider-popup a {
+      color: #0056b3;
+      text-decoration: none;
+    }
+    .provider-popup a:hover {
+      text-decoration: underline;
+    }
+    .provider-popup table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .provider-popup th,
+    .provider-popup td {
+      text-align: left;
+      padding: 2px 4px;
+      vertical-align: top;
+    }
+    .provider-popup th {
+      white-space: nowrap;
+      font-weight: 600;
+      padding-right: 6px;
+    }
+
+    /* Optional: style the tooltip that shows NUM_PROVIDERS */
+    .leaflet-tooltip.provider-count-label {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Filters UI -->
+  <div class="controls-container" id="filters">
+    <h3>Filter providers</h3>
+    <label>
+      <input type="checkbox" id="filterVirtual" />
+      Offers virtual services
+    </label>
+    <label>
+      <input type="checkbox" id="filterMedicaid" />
+      Accepts Medicaid
+    </label>
+    <label>
+      <input type="checkbox" id="filterPMHC" />
+      Has PMH-C specialist
+    </label>
+    <hr />
+    <small>
+      Data source: internal CSV. This is a proof‑of‑concept map of maternal mental health providers in Chicagoland.
+    </small>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <!-- Leaflet MarkerCluster JS -->
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <!-- PapaParse for CSV parsing -->
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <script>
+    // --- CONFIG ---
+    const csvFilePath = 'GIS_MMH.csv'; // Must be in same folder as this HTML file
+
+    // Columns we will hide from popup:
+    const hiddenFields = ['LATITUDE', 'LONGITUDE'];
+
+    // --- Initialize map ---
+    const map = L.map('map').setView([41.88, -87.63], 11); // Center on Chicago
+
+    // Esri Light Gray Canvas basemap
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      {
+        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+        maxZoom: 16
+      }
+    ).addTo(map);
+
+    // MarkerCluster group
+    const markerClusterGroup = L.markerClusterGroup();
+
+    // Store original data for filtering
+    let allProviderData = [];
+
+    // --- Utility: build popup HTML for a row ---
+    function buildPopupHtml(row) {
+      const url = row.URL && row.URL.trim() ? row.URL.trim() : null;
+      const name = row.NAME || 'Provider';
+
+      let html = '<div class="provider-popup">';
+      html += '<strong>' + name + '</strong>';
+
+      if (url) {
+        const safeUrl = url.startsWith('http') ? url : 'http://' + url;
+        html += '<br/><a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer">Website</a>';
+      }
+
+      html += '<br/><br/><table>';
+
+      for (const key in row) {
+        if (!row.hasOwnProperty(key)) continue;
+        if (hiddenFields.includes(key)) continue;
+        if (key.startsWith('Unnamed')) continue; // Skip empty extra columns
+
+        let label = key.replace(/_/g, ' ');
+        const value = row[key] == null ? '' : String(row[key]).trim();
+        if (value === '') continue;
+
+        html += '<tr><th>' + label + '</th><td>' + value + '</td></tr>';
+      }
+
+      html += '</table></div>';
+      return html;
+    }
+
+    // --- Utility: create a marker with provider count label ---
+    function createProviderMarker(row) {
+      const lat = parseFloat(row.LATITUDE);
+      const lng = parseFloat(row.LONGITUDE);
+      if (isNaN(lat) || isNaN(lng)) return null;
+
+      const numProviders = row.NUM_PROVIDERS ? parseInt(row.NUM_PROVIDERS, 10) : null;
+
+      // Circle marker styling
+      const marker = L.circleMarker([lat, lng], {
+        radius: 10,
+        color: '#0056b3',
+        weight: 1.5,
+        fillColor: '#4da3ff',
+        fillOpacity: 0.8
+      });
+
+      // Add a small label with number of providers if present
+      if (!isNaN(numProviders) && numProviders > 0) {
+        const labelHtml = '<div class="provider-label">' + numProviders + '</div>';
+        marker.bindTooltip(labelHtml, {
+          permanent: true,
+          direction: 'center',
+          className: 'provider-count-label'
+        });
+      }
+
+      // Bind popup
+      marker.bindPopup(buildPopupHtml(row));
+
+      return marker;
+    }
+
+    // --- Filtering logic ---
+    function passesFilters(row, filters) {
+      if (filters.virtual && String(row.VIRTUAL).toUpperCase() !== 'Y') return false;
+      if (filters.medicaid && String(row.MEDICAID).toUpperCase() !== 'Y') return false;
+      if (filters.pmhc && String(row.PMH_C).toUpperCase() !== 'Y') return false;
+      return true;
+    }
+
+    function applyFiltersAndRender() {
+      const filters = {
+        virtual: document.getElementById('filterVirtual').checked,
+        medicaid: document.getElementById('filterMedicaid').checked,
+        pmhc: document.getElementById('filterPMHC').checked
+      };
+
+      markerClusterGroup.clearLayers();
+
+      const markers = [];
+      allProviderData.forEach(row => {
+        if (passesFilters(row, filters)) {
+          const marker = createProviderMarker(row);
+          if (marker) {
+            markers.push(marker);
+          }
+        }
+      });
+
+      markerClusterGroup.addLayers(markers);
+
+      if (markers.length > 0) {
+        const group = L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.2));
+      }
+    }
+
+    // --- Load and parse CSV ---
+    Papa.parse(csvFilePath, {
+      header: true,
+      download: true,
+      dynamicTyping: false,
+      complete: function(results) {
+        const rows = results.data.filter(row => {
+          // Skip completely empty rows
+          const hasId = row.ID && String(row.ID).trim() !== '';
+          const hasName = row.NAME && String(row.NAME).trim() !== '';
+          return hasId || hasName;
+        });
+
+        allProviderData = rows;
+
+        // Add cluster group to map
+        map.addLayer(markerClusterGroup);
+
+        // Initial render
+        applyFiltersAndRender();
+      },
+      error: function(err) {
+        console.error('Error loading CSV:', err);
+        alert('Failed to load provider data CSV. Check console for details.');
+      }
+    });
+
+    // --- Wire up filter UI events ---
+    document.getElementById('filterVirtual').addEventListener('change', applyFiltersAndRender);
+    document.getElementById('filterMedicaid').addEventListener('change', applyFiltersAndRender);
+    document.getElementById('filterPMHC').addEventListener('change', applyFiltersAndRender);
+  </script>
+</body>
+</html>
