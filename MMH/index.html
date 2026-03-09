@@ -11,8 +11,6 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
-
-  <!-- Leaflet MarkerCluster CSS (no longer used, but you can remove later if desired) -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
@@ -29,10 +27,58 @@
       padding: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-    #map {
-      width: 100%;
-      height: 100%;
+    #map { width: 100%; height: 100%; }
+  .agency-icon,
+  .individual-icon {
+    display: inline-block;
+    width: 20px;        /* match iconSize in JS */
+    height: 20px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+   /* Legend styling */
+    .info.legend {
+      background: white;
+      padding: 8px 10px;
+      font: 14px/18px Arial, Helvetica, sans-serif;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      border-radius: 4px;
     }
+    .info.legend h4 {
+      margin: 0 0 6px 0;
+      font-size: 14px;
+    }
+    .info.legend div {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .info.legend i {
+      width: 14px;
+      height: 14px;
+      margin-right: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+  .agency-icon {
+    background-image: url('https://rcshepard.github.io/MMH/agency-icon.png');       /* adjust path if needed */
+  }
+
+  .individual-icon {
+    background-image: url('https://rcshepard.github.io/MMH/individual-icon.png');   /* adjust path if needed */
+  }
+
+  /* Optional label style, since you use provider-label and provider-count-label */
+.provider-count-label {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  font-weight: bold;
+  color: #ffffff;
+}
+
     .controls-container {
       position: absolute;
       top: 10px;
@@ -42,13 +88,10 @@
       padding: 14px 16px;
       border-radius: 4px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-      font-size: 18px; /* larger font */
+      font-size: 18px;
       max-width: 300px;
     }
-    .controls-container h3 {
-      margin: 0 0 8px 0;
-      font-size: 20px; /* larger heading */
-    }
+    .controls-container h3 { margin: 0 0 8px 0; font-size: 20px; }
     .controls-container label {
       display: flex;
       align-items: center;
@@ -57,82 +100,18 @@
       line-height: 1.4;
     }
     .controls-container input[type="checkbox"] {
-      width: 20px;   /* larger checkbox */
-      height: 20px;  /* larger checkbox */
-      margin-right: 10px;
-      transform: scale(1.3); /* double-ish visual size */
+      width: 20px; height: 20px; margin-right: 10px; transform: scale(1.3);
     }
-    .controls-container small {
-      font-size: 12px;
-    }
-
-    .provider-label {
-      font-weight: 700;
-      font-size: 11px;
-      color: #2b2b2b;
-      text-align: center;
-    }
-    .provider-popup {
-      font-size: 13px;
-      line-height: 1.3;
-    }
-    .provider-popup a {
-      color: #0056b3;
-      text-decoration: none;
-    }
-    .provider-popup a:hover {
-      text-decoration: underline;
-    }
-    .provider-popup table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-    .provider-popup th,
-    .provider-popup td {
-      text-align: left;
-      padding: 2px 4px;
-      vertical-align: top;
-    }
-    .provider-popup th {
-      white-space: nowrap;
-      font-weight: 600;
-      padding-right: 6px;
-    }
-
-    /* Optional: style the tooltip that shows NUM_PROVIDERS */
-    .leaflet-tooltip.provider-count-label {
-      background: transparent;
-      border: none;
-      box-shadow: none;
-    }
-
-    /* Different icon colors for agencies vs individuals */
-    .agency-icon {
-      background-color: #e74c3c;
-      border-radius: 50%;
-      border: 2px solid #c0392b;
-      width: 16px;
-      height: 16px;
-      box-shadow: 0 0 4px rgba(0,0,0,0.4);
-    }
-    .individual-icon {
-      background-color: #2ecc71;
-      border-radius: 50%;
-      border: 2px solid #27ae60;
-      width: 16px;
-      height: 16px;
-      box-shadow: 0 0 4px rgba(0,0,0,0.4);
-    }
-    .agency-icon,
-    .individual-icon {
-      display: block;
+    .controls-container small { font-size: 12px; }
+    .controls-container .fuzzy-search-label { margin: 6px 0 12px 0; }
+    .controls-container input[type="text"] {
+      width: 100%; font-size: 16px; padding: 4px 6px; margin-top: 3px;
+      box-sizing: border-box; border-radius: 2px; border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
-
-  <!-- Filters UI -->
   <div class="controls-container" id="filters">
     <h3>Filter providers</h3>
     <label>
@@ -147,124 +126,125 @@
       <input type="checkbox" id="filterPMHC" />
       Has PMH-C specialist
     </label>
+    <label>
+      <input type="checkbox" id="filterCDPH" />
+      Show additional CDPH providers
+    </label>
+    <small style="display:block;padding-left:32px;color:#444;">
+      Not perinatal specific, but open to all.
+    </small>
+    <div class="fuzzy-search-label">
+      <label for="fuzzySearchInput">Neighborhood search</label>
+      <input type="text" id="fuzzySearchInput" placeholder="Fuzzy search by Neighborhood..." />
+    </div>
     <hr />
     <small>
-      This is a proof‑of‑concept map of maternal mental health providers in Chicagoland.
+      This is a proof of concept map of maternal mental health providers in Chicagoland.
     </small>
   </div>
 
-  <!-- Leaflet JS -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
-
-  <!-- Leaflet MarkerCluster JS (no longer used, can remove later if desired) -->
+    crossorigin=""></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-
-  <!-- PapaParse for CSV parsing -->
   <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- Add Fuse.js -->
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 
   <script>
     // --- CONFIG ---
-    const csvFilePath = 'https://rcshepard.github.io/MMH/MMHdata.csv';
-
-    // Columns we will hide from popup:
+    const csvFilePath = 'https://rcshepard.github.io/MMH/MMH_for_GIS.csv';
     const hiddenFields = ['LATITUDE', 'LONGITUDE'];
+    const map = L.map('map').setView([41.88, -87.63], 12);
 
-    // --- Initialize map ---
-    const map = L.map('map').setView([41.88, -87.63], 12); // Center on Chicago
+    // Basemap layer
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+    }).addTo(map);
 
-    // Esri Light Gray Canvas basemap
-    L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-      {
-        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
-        maxZoom: 16
-      }
-    ).addTo(map);
+    // Add gray GeoJSON mask layer above the base map
+    fetch('https://rcshepard.github.io/MMH/nosuburbs.geojson')
+      .then(response => response.json())
+      .then(geojsonData => {
+        L.geoJSON(geojsonData, {
+          style: {
+            color: '#444',         
+            fillColor: '#666',     
+            fillOpacity: 0.7,      
+            weight: 1
+          }
+        }).addTo(map);
+      });
 
-    // We will manage our own "clusters" with proportional circle markers
     const markersLayerGroup = L.layerGroup().addTo(map);
-
-    // Store original data for filtering
     let allProviderData = [];
+    let fuse = null;        
+    let lastFuzzy = '';     
 
-    // --- Utility: build popup HTML for a row ---
     function buildPopupHtml(row) {
       const url = row.URL && row.URL.trim() ? row.URL.trim() : null;
       const name = row.NAME || 'Provider';
-
       let html = '<div class="provider-popup">';
       html += '<strong>' + name + '</strong>';
-
       if (url) {
-        const safeUrl = url.startsWith('http') ? url : 'http://' + url;
+        const safeUrl = url.startsWith('https') ? url : 'https://' + url;
         html += '<br/><a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer">Website</a>';
       }
-
       html += '<br/><br/><table>';
-
       for (const key in row) {
-        if (!row.hasOwnProperty(key)) continue;
-        if (hiddenFields.includes(key)) continue;
-        if (key.startsWith('Unnamed')) continue; // Skip empty extra columns
-
+        if (!row.hasOwnProperty(key) || hiddenFields.includes(key) || key.startsWith('Unnamed')) continue;
         let label = key.replace(/_/g, ' ');
         const value = row[key] == null ? '' : String(row[key]).trim();
         if (value === '') continue;
-
         html += '<tr><th>' + label + '</th><td>' + value + '</td></tr>';
       }
-
       html += '</table></div>';
       return html;
     }
 
-    // --- Utility: create a marker with different icons for agency vs individual ---
-    function createProviderMarker(row) {
-      const lat = parseFloat(row.LATITUDE);
-      const lng = parseFloat(row.LONGITUDE);
-      if (isNaN(lat) || isNaN(lng)) return null;
+// NEW: define two Leaflet icons that use your PNG files
+const agencyIcon = L.icon({
+  iconUrl: 'https://rcshepard.github.io/MMH/agency-icon.png',      // adjust path if needed
+  iconSize:     [32, 32],
+  iconAnchor:   [16, 32],
+  popupAnchor:  [0, -32]
+});
 
-      const numProviders = row.NUM_PROVIDERS ? parseInt(row.NUM_PROVIDERS, 10) : null;
-      const type = (row.AGENCY_INDIVIDUAL || '').toString().trim().toUpperCase();
+const individualIcon = L.icon({
+  iconUrl: 'https://rcshepard.github.io/MMH/individual-icon.png',  // adjust path if needed
+  iconSize:     [32, 32],
+  iconAnchor:   [16, 32],
+  popupAnchor:  [0, -32]
+});
 
-      // Choose an icon based on AGENCY_INDIVIDUAL
-      const isAgency =
-        type === 'AGENCY' ||
-        type === 'A' ||
-        type === 'AGENCIES';
+function createProviderMarker(row) {
+  const lat = parseFloat(row.LATITUDE);
+  const lng = parseFloat(row.LONGITUDE);
+  if (isNaN(lat) || isNaN(lng)) return null;
 
-      const iconClass = isAgency ? 'agency-icon' : 'individual-icon';
+  const numProviders = row.NUM_PROVIDERS ? parseInt(row.NUM_PROVIDERS, 10) : null;
+  const type = (row.AGENCY_INDIVIDUAL || '').toString().trim().toUpperCase();
+  const isAgency = type === 'AGENCY' || type === 'A' || type === 'AGENCIES';
 
-      const icon = L.divIcon({
-        className: '',
-        html: '<span class="' + iconClass + '"></span>',
-        iconSize: [20, 20],
-        iconAnchor: [10, 10]
-      });
+  // CHANGED: instead of divIcon + span class, pick one of the two image icons
+  const icon = isAgency ? agencyIcon : individualIcon;
 
-      const marker = L.marker([lat, lng], { icon });
+  // UNCHANGED: create marker with that icon
+  const marker = L.marker([lat, lng], { icon });
 
-      // Add a small label with number of providers if present
-      if (!isNaN(numProviders) && numProviders > 0) {
-        const labelHtml = '<div class="provider-label">' + numProviders + '</div>';
-        marker.bindTooltip(labelHtml, {
-          permanent: true,
-          direction: 'top',
-          className: 'provider-count-label'
-        });
-      }
+  if (!isNaN(numProviders) && numProviders > 0) {
+    const labelHtml = '<div class="provider-label">' + numProviders + '</div>';
+    marker.bindTooltip(labelHtml, {
+      permanent: true,
+      direction: 'top',
+      className: 'provider-count-label'
+    });
+  }
 
-      // Bind popup
-      marker.bindPopup(buildPopupHtml(row));
+  marker.bindPopup(buildPopupHtml(row));
+  return marker;
+}
 
-      return marker;
-    }
-
-    // --- Filtering logic ---
     function passesFilters(row, filters) {
       if (filters.virtual && String(row.VIRTUAL).toUpperCase() !== 'Y') return false;
       if (filters.medicaid && String(row.MEDICAID).toUpperCase() !== 'Y') return false;
@@ -272,18 +252,12 @@
       return true;
     }
 
-    // --- Simple clustering for proportional symbols ---
-    // We treat markers within "clusterRadiusMeters" as a single cluster and show
-    // one circle marker proportional to the number of points.
-    const clusterRadiusMeters = 100; // you can tune this
-
+    const clusterRadiusMeters = 100;
     function clusterMarkers(markers) {
       const clusters = [];
-
       markers.forEach(marker => {
         const latLng = marker.getLatLng();
         let foundCluster = null;
-
         for (let i = 0; i < clusters.length; i++) {
           const clusterCenter = clusters[i].latLng;
           const distance = map.distance(latLng, clusterCenter);
@@ -292,10 +266,8 @@
             break;
           }
         }
-
         if (foundCluster) {
           foundCluster.markers.push(marker);
-          // Recompute cluster center as average (simple approach)
           const len = foundCluster.markers.length;
           const avgLat =
             (foundCluster.latLng.lat * (len - 1) + latLng.lat) / len;
@@ -309,103 +281,167 @@
           });
         }
       });
-
       return clusters;
     }
+	
+	function classifyType(row) {
+  // Normalize AGENCY_INDIVIDUAL field
+  const type = (row.AGENCY_INDIVIDUAL || '').toString().trim().toUpperCase();
+  if (!type) return 'unknown';
 
-    function applyFiltersAndRender() {
-      const filters = {
-        virtual: document.getElementById('filterVirtual').checked,
-        medicaid: document.getElementById('filterMedicaid').checked,
-        pmhc: document.getElementById('filterPMHC').checked
-      };
+  // Adjust logic if your data uses different codes
+  if (type === 'AGENCY' || type === 'A' || type === 'AGENCIES') return 'agency';
+  if (type === 'INDIVIDUAL' || type === 'I' || type === 'INDIVIDUALS') return 'individual';
 
-      markersLayerGroup.clearLayers();
+  // Fallback: if the field literally says "MIXED" or similar:
+  if (type === 'MIXED' || type === 'BOTH') return 'mixed';
 
-      const markers = [];
-      allProviderData.forEach(row => {
-        if (passesFilters(row, filters)) {
-          const marker = createProviderMarker(row);
-          if (marker) {
-            markers.push(marker);
-          }
+  return 'unknown';
+}
+
+function getColorForType(typesSet) {
+  // typesSet is a Set like { 'agency' } or { 'individual', 'agency' }
+
+  const hasAgency = typesSet.has('agency');
+  const hasIndividual = typesSet.has('individual');
+
+  if (hasAgency && hasIndividual) return '#800080';  // purple
+  if (hasAgency) return '#0056b3';                   // blue
+  if (hasIndividual) return '#cc0000';               // red
+
+  // default/unknown
+  return '#666666';
+}
+
+function applyFiltersAndRender() {
+  const filters = {
+    virtual: document.getElementById('filterVirtual').checked,
+    medicaid: document.getElementById('filterMedicaid').checked,
+    pmhc: document.getElementById('filterPMHC').checked,
+    cdph: document.getElementById('filterCDPH').checked
+  };
+  lastFuzzy = document.getElementById('fuzzySearchInput').value.trim();
+  markersLayerGroup.clearLayers();
+
+  // CDPH filtering logic
+  let rowsFiltered = allProviderData.filter(row => {
+    if (filters.cdph) {
+      // Only show CDPH backup sites
+      return String(row.CDPH).toUpperCase() === 'Y';
+    } else {
+      // Hide CDPH backups
+      return String(row.CDPH).toUpperCase() !== 'Y';
+    }
+  });
+
+  // Apply the other filters
+  rowsFiltered = rowsFiltered.filter(row => passesFilters(row, filters));
+
+  // Fuzzy search by NEIGHBORHOODS
+  if (lastFuzzy && fuse) {
+    const fuseResults = fuse.search(lastFuzzy);
+    const ids = new Set(fuseResults.map(res => res.item.ID));
+    rowsFiltered = rowsFiltered.filter(row => ids.has(row.ID));
+  }
+
+  if (!rowsFiltered.length) return;
+
+  // --- Aggregate by coordinate ---
+  // Use a small rounding to avoid floating-point mismatches
+  const coordMap = new Map(); 
+  rowsFiltered.forEach(row => {
+    const lat = parseFloat(row.LATITUDE);
+    const lng = parseFloat(row.LONGITUDE);
+    if (isNaN(lat) || isNaN(lng)) return;
+
+    const latKey = lat.toFixed(6);
+    const lngKey = lng.toFixed(6);
+    const key = latKey + ',' + lngKey;
+
+    const numProviders = row.NUM_PROVIDERS ? parseInt(row.NUM_PROVIDERS, 10) : 1;
+    const type = classifyType(row);
+
+    if (!coordMap.has(key)) {
+      coordMap.set(key, {
+        lat: lat,
+        lng: lng,
+        totalProviders: 0,
+        types: new Set(),
+        rows: []
+      });
+    }
+    const entry = coordMap.get(key);
+    entry.totalProviders += (isNaN(numProviders) ? 1 : numProviders);
+    if (type !== 'unknown') entry.types.add(type);
+    entry.rows.push(row);
+  });
+
+  const circles = [];
+  const scaleFactor = 2.5;  // adjust to taste
+
+  coordMap.forEach(entry => {
+    const count = entry.totalProviders || entry.rows.length;
+    const color = getColorForType(entry.types);
+    const radius = Math.max(6, Math.sqrt(count) * scaleFactor);
+
+    const circle = L.circleMarker([entry.lat, entry.lng], {
+      radius: radius,
+      color: color,
+      weight: 2,
+      fillColor: color,
+      fillOpacity: 0.6
+    }).addTo(markersLayerGroup);
+
+    // Tooltip: total count
+    circle.bindTooltip(
+      '<div class="provider-label">' + count + '</div>',
+      {
+        permanent: true,
+        direction: 'center',
+        className: 'provider-count-label'
+      }
+    );
+
+    // Popup: combined details of all rows at this location
+    circle.on('click', () => {
+      let html = '';
+      entry.rows.forEach((row, idx) => {
+        const content = buildPopupHtml(row);
+        if (content) {
+          if (html !== '') { html += '<hr/>'; }
+          html += content;
         }
       });
+      circle.bindPopup(html).openPopup();
+    });
 
-      if (markers.length === 0) {
-        return;
-      }
+    circles.push(circle);
+  });
 
-      // Cluster markers and draw proportional circles
-      const clusters = clusterMarkers(markers);
+  if (circles.length) {
+    const group = L.featureGroup(circles);
+    map.fitBounds(group.getBounds().pad(0.2));
+  }
+}
 
-      // For proportional circles, we can scale radius by sqrt of count
-      // so area ~ count. Adjust scaleFactor to taste.
-      const scaleFactor = 4;
-      const allClusterMarkers = [];
-
-      clusters.forEach(cluster => {
-        const count = cluster.markers.length;
-        const radius = Math.max(8, Math.sqrt(count) * scaleFactor);
-
-        // Circle marker representing the cluster
-        const circle = L.circleMarker(cluster.latLng, {
-          radius: radius,
-          color: '#0056b3',
-          weight: 2,
-          fillColor: '#4da3ff',
-          fillOpacity: 0.6
-        }).addTo(markersLayerGroup);
-
-        // Label the circle with the count
-        circle.bindTooltip(
-          '<div class="provider-label">' + count + '</div>',
-          {
-            permanent: true,
-            direction: 'center',
-            className: 'provider-count-label'
-          }
-        );
-
-        // When clicked, show a popup that concatenates the popups for the cluster
-        circle.on('click', () => {
-          let html = '';
-          cluster.markers.forEach(m => {
-            const content = m.getPopup() ? m.getPopup().getContent() : '';
-            if (content) {
-              if (html !== '') {
-                html += '<hr/>';
-              }
-              html += content;
-            }
-          });
-          circle.bindPopup(html).openPopup();
-        });
-
-        allClusterMarkers.push(circle);
-      });
-
-      // Fit map to all cluster circles
-      const group = L.featureGroup(allClusterMarkers);
-      map.fitBounds(group.getBounds().pad(0.2));
-    }
-
-    // --- Load and parse CSV ---
     Papa.parse(csvFilePath, {
       header: true,
       download: true,
       dynamicTyping: false,
       complete: function(results) {
         const rows = results.data.filter(row => {
-          // Skip completely empty rows
           const hasId = row.ID && String(row.ID).trim() !== '';
           const hasName = row.NAME && String(row.NAME).trim() !== '';
           return hasId || hasName;
         });
-
         allProviderData = rows;
+        fuse = new Fuse(allProviderData, {
+          keys: ['NEIGHBORHOODS'],
+          threshold: 0.4,
+          ignoreLocation: true
+        });
+		
 
-        // Initial render
         applyFiltersAndRender();
       },
       error: function(err) {
@@ -414,11 +450,28 @@
       }
     });
 
-    // --- Wire up filter UI events ---
     document.getElementById('filterVirtual').addEventListener('change', applyFiltersAndRender);
     document.getElementById('filterMedicaid').addEventListener('change', applyFiltersAndRender);
     document.getElementById('filterPMHC').addEventListener('change', applyFiltersAndRender);
+    document.getElementById('filterCDPH').addEventListener('change', applyFiltersAndRender);
+    document.getElementById('fuzzySearchInput').addEventListener('input', applyFiltersAndRender);
+	
+	 // --- LEGEND CONTROL ---
+    const legend = L.control({ position: 'bottomright' });
+
+    legend.onAdd = function (map) {
+      const div = L.DomUtil.create('div', 'info legend');
+
+      div.innerHTML =
+        '<h4>Provider Type</h4>' +
+        '<div><i style="background:#cc0000"></i>Individual</div>' +
+        '<div><i style="background:#0056b3"></i>Agency</div>' +
+        '<div><i style="background:#800080"></i>Agency and Individual Providers</div>';
+
+      return div;
+    };
+
+    legend.addTo(map);
   </script>
 </body>
 </html>
-
