@@ -108,6 +108,33 @@
       width: 100%; font-size: 16px; padding: 4px 6px; margin-top: 3px;
       box-sizing: border-box; border-radius: 2px; border: 1px solid #ccc;
     }
+	
+	  .controls-container input[type="text"] {
+      width: 100%; font-size: 16px; padding: 4px 6px; margin-top: 3px;
+      box-sizing: border-box; border-radius: 2px; border: 1px solid #ccc;
+    }
+
+    /* === Make Leaflet zoom control 100% larger === */
+    .leaflet-control-zoom.leaflet-bar {
+      transform: scale(2);             /* 2x size (100% larger) */
+      transform-origin: center center; /* scale from center */
+    }
+
+    /* Optional: tweak the box size so hit area matches the visuals */
+    .leaflet-control-zoom.leaflet-bar a {
+      width: 26px;   /* keep default, transform will scale it */
+      height: 26px;
+      line-height: 26px;
+      font-size: 18px;
+    }
+	
+	.provider-popup-title {
+  font-size: 18px;      /* adjust size as desired */
+  font-weight: 700;     /* bold */
+  margin-bottom: 4px;
+  display: inline-block;
+}
+	
   </style>
 </head>
 <body>
@@ -154,8 +181,20 @@
   <script>
     // --- CONFIG ---
     const csvFilePath = 'https://rcshepard.github.io/MMH/MMH_for_GIS.csv';
-    const hiddenFields = ['LATITUDE', 'LONGITUDE'];
-    const map = L.map('map').setView([41.88, -87.63], 12);
+    const hiddenFields = [
+  'LATITUDE',
+  'LONGITUDE',
+  'ID',
+  'NAME',
+  'URL',
+  'CITY',
+  'STATE',
+  'ZIP',
+  'AGENCY_INDIVIDUAL',
+  'NUM_PROVIDERS',
+  'NEIGHBORHOODS'
+];
+    const map = L.map('map', { zoomControl: true}).setView([41.88, -87.63], 12);
 
     // Basemap layer
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
@@ -181,24 +220,52 @@
     let fuse = null;        
     let lastFuzzy = '';     
 
+// Map raw column names to nicer labels for the popup table
+const fieldLabelMap = {
+  'ADDRESS': 'Address',
+  'VIRTUAL': 'Virtual options',
+  'MEDICAID': 'Accepts Medicaid',
+  'PMH_C': 'PMH Certified',
+  'CDPH': 'CDPH'
+};
+
+// Convert "Y"/"N" to "Yes"/"No" for selected fields
+function formatFieldValue(key, rawValue) {
+  const ynFields = ['VIRTUAL', 'MEDICAID', 'PMH_C', 'CDPH'];
+  if (ynFields.includes(key)) {
+    const val = String(rawValue).trim().toUpperCase();
+    if (val === 'Y') return 'Yes';
+    if (val === 'N') return 'No';
+  }
+  return rawValue;
+}
+
     function buildPopupHtml(row) {
       const url = row.URL && row.URL.trim() ? row.URL.trim() : null;
       const name = row.NAME || 'Provider';
-      let html = '<div class="provider-popup">';
-      html += '<strong>' + name + '</strong>';
+let html = '<div class="provider-popup">';
+html += '<span class="provider-popup-title">' + name + '</span>';
       if (url) {
         const safeUrl = url.startsWith('https') ? url : 'https://' + url;
         html += '<br/><a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer">Website</a>';
       }
-      html += '<br/><br/><table>';
-      for (const key in row) {
-        if (!row.hasOwnProperty(key) || hiddenFields.includes(key) || key.startsWith('Unnamed')) continue;
-        let label = key.replace(/_/g, ' ');
-        const value = row[key] == null ? '' : String(row[key]).trim();
-        if (value === '') continue;
-        html += '<tr><th>' + label + '</th><td>' + value + '</td></tr>';
-      }
-      html += '</table></div>';
+        html += '<br/><br/><table>';
+  for (const key in row) {
+    if (!row.hasOwnProperty(key) || hiddenFields.includes(key) || key.startsWith('Unnamed')) continue;
+
+    const rawValue = row[key];
+    const valueStr = rawValue == null ? '' : String(rawValue).trim();
+    if (valueStr === '') continue;
+
+    // Use friendly label if defined, otherwise fall back to a cleaned-up key
+    const label = fieldLabelMap[key] || key.replace(/_/g, ' ');
+
+    // Convert Y/N to Yes/No where appropriate
+    const formattedValue = formatFieldValue(key, valueStr);
+
+    html += '<tr><th>' + label + ':</th><td>' + formattedValue + '</td></tr>';
+  }
+  html += '</table></div>';
       return html;
     }
 
@@ -377,7 +444,7 @@ function applyFiltersAndRender() {
   });
 
   const circles = [];
-  const scaleFactor = 2.5;  // adjust to taste
+  const scaleFactor = 3;  // adjust to taste
 
   coordMap.forEach(entry => {
     const count = entry.totalProviders || entry.rows.length;
@@ -472,6 +539,10 @@ function applyFiltersAndRender() {
     };
 
     legend.addTo(map);
+	L.control.zoom({
+    position: 'topright'
+}).addTo(map);
+
   </script>
 </body>
 </html>
