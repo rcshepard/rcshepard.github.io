@@ -89,7 +89,7 @@
       border-radius: 4px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.3);
       font-size: 18px;
-      max-width: 300px;
+      max-width: 360px;
     }
     .controls-container h3 { margin: 0 0 8px 0; font-size: 20px; }
     .controls-container label {
@@ -155,19 +155,19 @@
     </label>
     <label>
       <input type="checkbox" id="filterCDPH" />
-      Show additional CDPH providers
+      Show&nbsp;<a href="https://www.chicago.gov/city/en/depts/cdph/supp_info/behavioral-health/mental_health_centers.html">CDPH mental health clinics</a>
     </label>
     <small style="display:block;padding-left:32px;color:#444;">
-      Not perinatal specific, but open to all.
-    </small>
+      Not perinatal specific, but available to Chicagoans regardless of ability to pay, immigration status, or health insurance
+    </small>    <hr />
     <div class="fuzzy-search-label">
       <label for="fuzzySearchInput">Neighborhood search</label>
       <input type="text" id="fuzzySearchInput" placeholder="Fuzzy search by Neighborhood..." />
     </div>
-    <hr />
-    <small>
-      This is a proof of concept map of maternal mental health providers in Chicagoland.
-    </small>
+
+    <!-- <small> -->
+      <!-- This is a proof of concept map of maternal mental health providers in Chicagoland. -->
+    <!-- </small> -->
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
