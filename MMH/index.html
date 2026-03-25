@@ -194,7 +194,7 @@
   'NUM_PROVIDERS',
   'NEIGHBORHOODS'
 ];
-    const map = L.map('map', { zoomControl: true}).setView([41.88, -87.63], 12);
+    const map = L.map('map', { zoomControl: true}).setView([41.88, -87.63], 11);
 
     // Basemap layer
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
@@ -484,11 +484,21 @@ function applyFiltersAndRender() {
 
     circles.push(circle);
   });
+//Come back to this section if you want to get the zoom to fit the points...
+  <!-- if (circles.length) { -->
+    <!-- const group = L.featureGroup(circles); -->
+    <!-- const bounds = group.getBounds().pad(0.2); -->
 
-  if (circles.length) {
-    const group = L.featureGroup(circles);
-    map.fitBounds(group.getBounds().pad(0.2));
-  }
+    <!-- // Use fitBounds, but clamp resulting zoom so it never goes out past 10 -->
+    <!-- map.fitBounds(bounds); -->
+
+    <!-- // If fitBounds chose a zoom less than 10 (too zoomed out), force it back in -->
+    <!-- if (map.getZoom() < 12) { -->
+      <!-- map.setZoom(12); -->
+      <!-- // Optionally, recenter on the bounds center so you're still roughly over Chicago -->
+      <!-- map.panTo(bounds.getCenter()); -->
+    <!-- } -->
+  <!-- } -->
 }
 
     Papa.parse(csvFilePath, {
