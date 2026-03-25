@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Chicagoland Maternal Mental Health Providers (Proof of Concept)</title>
+  <title>Chicagoland Maternal Mental Health Providers</title>
 
   <!-- Leaflet CSS -->
   <link
@@ -141,22 +141,22 @@
   <div id="map"></div>
   <div class="controls-container" id="filters">
     <h3>Filter providers</h3>
-    <label>
-      <input type="checkbox" id="filterVirtual" />
-      Offers virtual services
-    </label>
-    <label>
-      <input type="checkbox" id="filterMedicaid" />
-      Accepts Medicaid
-    </label>
-    <label>
-      <input type="checkbox" id="filterPMHC" />
-      Has PMH-C specialist
-    </label>
-    <label>
-      <input type="checkbox" id="filterCDPH" />
-      Show&nbsp;<a href="https://www.chicago.gov/city/en/depts/cdph/supp_info/behavioral-health/mental_health_centers.html">CDPH mental health clinics</a>
-    </label>
+<label>
+  <input type="checkbox" id="filterVirtual" />
+  Offers virtual services
+</label>
+<label>
+  <input type="checkbox" id="filterPMHC" />
+  Has PMH-C specialist
+</label>
+<label>
+  <input type="checkbox" id="filterMedicaid" />
+  Accepts Medicaid
+</label>
+<label>
+  <input type="checkbox" id="filterCDPH" />
+  Show&nbsp;<a href="https://www.chicago.gov/city/en/depts/cdph/supp_info/behavioral-health/mental_health_centers.html">CDPH mental health clinics</a>
+</label>
     <small style="display:block;padding-left:32px;color:#444;">
       Not perinatal specific, but available to Chicagoans regardless of ability to pay, immigration status, or health insurance
     </small>    <hr />
@@ -372,9 +372,14 @@ function getColorForType(typesSet) {
   const hasAgency = typesSet.has('agency');
   const hasIndividual = typesSet.has('individual');
 
-  if (hasAgency && hasIndividual) return '#800080';  // purple
-  if (hasAgency) return '#0056b3';                   // blue
-  if (hasIndividual) return '#cc0000';               // red
+  // Brand colors:
+  // red:    #800000
+  // blue:   #007396
+  // violet: #59315F
+
+  if (hasAgency && hasIndividual) return '#59315F';  // violet
+  if (hasAgency) return '#007396';                   // blue
+  if (hasIndividual) return '#800000';               // red
 
   // default/unknown
   return '#666666';
@@ -539,11 +544,11 @@ function applyFiltersAndRender() {
     legend.onAdd = function (map) {
       const div = L.DomUtil.create('div', 'info legend');
 
-      div.innerHTML =
-        '<h4>Provider Type</h4>' +
-        '<div><i style="background:#cc0000"></i>Individual</div>' +
-        '<div><i style="background:#0056b3"></i>Agency</div>' +
-        '<div><i style="background:#800080"></i>Agency and Individual Providers</div>';
+div.innerHTML =
+  '<h4>Provider Type</h4>' +
+  '<div><i style="background:#800000"></i>Individual</div>' +
+  '<div><i style="background:#007396"></i>Agency</div>' +
+  '<div><i style="background:#59315F"></i>Agency and Individual Providers</div>';
 
       return div;
     };
