@@ -21,120 +21,324 @@
   />
 
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    #map { width: 100%; height: 100%; }
-  .agency-icon,
-  .individual-icon {
-    display: inline-block;
-    width: 20px;        /* match iconSize in JS */
-    height: 20px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-  }
-   /* Legend styling */
-    .info.legend {
-      background: white;
-      padding: 8px 10px;
-      font: 14px/18px Arial, Helvetica, sans-serif;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-      border-radius: 4px;
-    }
-    .info.legend h4 {
-      margin: 0 0 6px 0;
-      font-size: 14px;
-    }
-    .info.legend div {
-      display: flex;
-      align-items: center;
-      margin-bottom: 4px;
-    }
-    .info.legend i {
-      width: 14px;
-      height: 14px;
-      margin-right: 6px;
-      border-radius: 50%;
-      display: inline-block;
-    }
+/* =========
+   GLOBAL
+   ========= */
+:root {
+  /* Brand-ish palette tuned to your marker colors */
+  --mmh-red: #800000;
+  --mmh-blue: #007396;
+  --mmh-violet: #59315f;
 
-  .agency-icon {
-    background-image: url('https://rcshepard.github.io/MMH/agency-icon.png');       /* adjust path if needed */
-  }
+  --mmh-bg: #f5f6f8;
+  --mmh-panel-bg: #ffffff;
+  --mmh-border-subtle: #dde1e7;
+  --mmh-text-main: #222222;
+  --mmh-text-muted: #666666;
+  --mmh-accent: #0f766e;   /* teal accent for focus / links */
+  --mmh-shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.12);
+  --mmh-radius-lg: 10px;
+  --mmh-radius-sm: 4px;
+}
 
-  .individual-icon {
-    background-image: url('https://rcshepard.github.io/MMH/individual-icon.png');   /* adjust path if needed */
-  }
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--mmh-text-main);
+  background: radial-gradient(circle at top left, #eef2ff 0, #f5f6f8 35%, #f9fafb 100%);
+}
 
-  /* Optional label style, since you use provider-label and provider-count-label */
+/* Map should sit under the UI like a full-page app */
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Remove default focus styles but keep accessibility */
+:focus {
+  outline: 2px solid var(--mmh-accent);
+  outline-offset: 2px;
+}
+
+/* =========
+   ICON CLASSES (LEGACY SUPPORT)
+   ========= */
+.agency-icon,
+.individual-icon {
+  display: inline-block;
+  width: 20px; /* match iconSize if used in JS */
+  height: 20px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.agency-icon {
+  background-image: url('https://rcshepard.github.io/MMH/agency-icon.png');
+}
+
+.individual-icon {
+  background-image: url('https://rcshepard.github.io/MMH/individual-icon.png');
+}
+
+/* =========
+   FILTER PANEL
+   ========= */
+.controls-container {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 1000;
+  background: var(--mmh-panel-bg);
+  border-radius: var(--mmh-radius-lg);
+  box-shadow: var(--mmh-shadow-soft);
+  padding: 18px 20px 16px;
+  max-width: 380px;
+  font-size: 15px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+/* Title */
+.controls-container h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #0f172a;
+}
+
+/* Filter labels (checkbox lines) */
+.controls-container label {
+  display: flex;
+  align-items: flex-start;
+  margin: 6px 0;
+  cursor: pointer;
+  line-height: 1.4;
+  color: var(--mmh-text-main);
+}
+
+/* Checkbox styling */
+.controls-container input[type="checkbox"] {
+  margin-right: 10px;
+  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--mmh-accent);
+}
+
+/* Second-line explanatory text (e.g., prescriber details) */
+.controls-container label small {
+  font-size: 12px;
+  color: var(--mmh-text-muted);
+}
+
+/* Descriptive text under CDPH checkbox */
+.controls-container > small {
+  font-size: 12px;
+  color: var(--mmh-text-muted) !important;
+}
+
+/* Divider line between checkboxes and search */
+.controls-container hr {
+  border: 0;
+  border-top: 1px solid var(--mmh-border-subtle);
+  margin: 12px 0 10px;
+}
+
+/* Neighborhood search label / wrapper */
+.controls-container .fuzzy-search-label {
+  margin: 4px 0 0;
+}
+
+.controls-container .fuzzy-search-label label {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--mmh-text-muted);
+}
+
+/* Text input */
+.controls-container input[type="text"] {
+  width: 100%;
+  font-size: 14px;
+  padding: 7px 9px;
+  margin-top: 3px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid var(--mmh-border-subtle);
+  background-color: #f9fafb;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.controls-container input[type="text"]:focus {
+  border-color: var(--mmh-accent);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.2);
+}
+
+/* Make CDPH link feel like a subtle inline link */
+.controls-container a {
+  color: var(--mmh-accent);
+  text-decoration: none;
+}
+
+.controls-container a:hover,
+.controls-container a:focus {
+  text-decoration: underline;
+}
+
+/* =========
+   LEAFLET ZOOM CONTROL (ENLARGED)
+   ========= */
+.leaflet-control-zoom.leaflet-bar {
+  transform: scale(1.6);
+  transform-origin: top right;
+}
+
+/* Adjust internal button dimensions */
+.leaflet-control-zoom.leaflet-bar a {
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  font-size: 18px;
+}
+
+/* =========
+   LEGEND
+   ========= */
+.info.legend {
+  background: rgba(255, 255, 255, 0.96);
+  padding: 10px 12px;
+  font: 13px/18px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  box-shadow: var(--mmh-shadow-soft);
+  border-radius: var(--mmh-radius-lg);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: var(--mmh-text-main);
+}
+
+.info.legend h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+}
+
+.info.legend div {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.info.legend i {
+  width: 14px;
+  height: 14px;
+  margin-right: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.18);
+}
+
+/* =========
+   POPUPS
+   ========= */
+.provider-popup {
+  font-size: 14px;
+  color: #1f2933;
+}
+
+.provider-popup-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: inline-block;
+  color: #111827;
+}
+
+/* Popup website link */
+.provider-popup a {
+  color: var(--mmh-accent);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.provider-popup a:hover,
+.provider-popup a:focus {
+  text-decoration: underline;
+}
+
+/* Popup table for provider details */
+.provider-popup table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
+}
+
+.provider-popup th,
+.provider-popup td {
+  padding: 3px 0;
+  vertical-align: top;
+  font-size: 13px;
+}
+
+.provider-popup th {
+  width: 40%;
+  font-weight: 600;
+  color: var(--mmh-text-muted);
+  padding-right: 6px;
+}
+
+.provider-popup td {
+  color: var(--mmh-text-main);
+}
+
+/* Separator between stacked provider entries */
+.leaflet-popup-content hr {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 10px 0;
+}
+
+/* =========
+   COUNT LABELS ON CIRCLES
+   ========= */
 .provider-count-label {
   background: transparent;
   border: none;
   box-shadow: none;
-  font-weight: bold;
+  font-weight: 700;
   color: #ffffff;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 0 1px rgba(0, 0, 0, 0.4);
 }
 
-    .controls-container {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 14px 16px;
-      border-radius: 4px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-      font-size: 18px;
-      max-width: 360px;
-    }
-    .controls-container h3 { margin: 0 0 8px 0; font-size: 20px; }
-    .controls-container label {
-      display: flex;
-      align-items: center;
-      margin: 4px 0;
-      cursor: pointer;
-      line-height: 1.4;
-    }
-    .controls-container input[type="checkbox"] {
-      width: 20px; height: 20px; margin-right: 10px; transform: scale(1.3);
-    }
-    .controls-container small { font-size: 12px; }
-    .controls-container .fuzzy-search-label { margin: 6px 0 12px 0; }
-    .controls-container input[type="text"] {
-      width: 100%; font-size: 16px; padding: 4px 6px; margin-top: 3px;
-      box-sizing: border-box; border-radius: 2px; border: 1px solid #ccc;
-    }
-	
-	  .controls-container input[type="text"] {
-      width: 100%; font-size: 16px; padding: 4px 6px; margin-top: 3px;
-      box-sizing: border-box; border-radius: 2px; border: 1px solid #ccc;
-    }
-
-    /* === Make Leaflet zoom control 100% larger === */
-    .leaflet-control-zoom.leaflet-bar {
-      transform: scale(2);             /* 2x size (100% larger) */
-      transform-origin: center center; /* scale from center */
-    }
-
-    /* Optional: tweak the box size so hit area matches the visuals */
-    .leaflet-control-zoom.leaflet-bar a {
-      width: 26px;   /* keep default, transform will scale it */
-      height: 26px;
-      line-height: 26px;
-      font-size: 18px;
-    }
-	
-	.provider-popup-title {
-  font-size: 18px;      /* adjust size as desired */
-  font-weight: 700;     /* bold */
-  margin-bottom: 4px;
-  display: inline-block;
+/* Optional: fine-tune tooltip padding */
+.leaflet-tooltip.provider-count-label {
+  padding: 0;
 }
-	
+
+/* =========
+   RESPONSIVE TWEAKS
+   ========= */
+@media (max-width: 768px) {
+  .controls-container {
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 24px);
+    max-width: 440px;
+    padding: 16px 16px 12px;
+  }
+
+  .leaflet-control-zoom.leaflet-bar {
+    transform: scale(1.4);
+  }
+}
   </style>
 </head>
 <body>
