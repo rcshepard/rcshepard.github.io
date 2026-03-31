@@ -155,6 +155,10 @@
   Offers virtual services
 </label>
 <label>
+  <input type="checkbox" id="filterPrescriber" />
+  Medication prescriber
+</label>
+<label>
   <input type="checkbox" id="filterCDPH" />
   Show&nbsp;<a href="https://www.chicago.gov/city/en/depts/cdph/supp_info/behavioral-health/mental_health_centers.html">CDPH mental health clinics</a>
 </label>
@@ -313,12 +317,19 @@ function createProviderMarker(row) {
   return marker;
 }
 
-    function passesFilters(row, filters) {
-      if (filters.virtual && String(row.VIRTUAL).toUpperCase() !== 'Y') return false;
-      if (filters.medicaid && String(row.MEDICAID).toUpperCase() !== 'Y') return false;
-      if (filters.pmhc && String(row.PMH_C).toUpperCase() !== 'Y') return false;
-      return true;
-    }
+function passesFilters(row, filters) {
+  if (filters.virtual && String(row.VIRTUAL).toUpperCase() !== 'Y') return false;
+  if (filters.medicaid && String(row.MEDICAID).toUpperCase() !== 'Y') return false;
+  if (filters.pmhc && String(row.PMH_C).toUpperCase() !== 'Y') return false;
+
+  // NEW: medication prescriber filter based on ID starting with "2"
+  if (filters.prescriber) {
+    const idStr = (row.ID || '').toString().trim();
+    if (!idStr.startsWith('2')) return false;
+  }
+
+  return true;
+}
 
     const clusterRadiusMeters = 100;
     function clusterMarkers(markers) {
@@ -391,7 +402,8 @@ function applyFiltersAndRender() {
     virtual: document.getElementById('filterVirtual').checked,
     medicaid: document.getElementById('filterMedicaid').checked,
     pmhc: document.getElementById('filterPMHC').checked,
-    cdph: document.getElementById('filterCDPH').checked
+    cdph: document.getElementById('filterCDPH').checked,
+	prescriber: document.getElementById('filterPrescriber').checked
   };
   lastFuzzy = document.getElementById('fuzzySearchInput').value.trim();
   markersLayerGroup.clearLayers();
@@ -533,11 +545,12 @@ function applyFiltersAndRender() {
       }
     });
 
-    document.getElementById('filterVirtual').addEventListener('change', applyFiltersAndRender);
-    document.getElementById('filterMedicaid').addEventListener('change', applyFiltersAndRender);
-    document.getElementById('filterPMHC').addEventListener('change', applyFiltersAndRender);
-    document.getElementById('filterCDPH').addEventListener('change', applyFiltersAndRender);
-    document.getElementById('fuzzySearchInput').addEventListener('input', applyFiltersAndRender);
+document.getElementById('filterVirtual').addEventListener('change', applyFiltersAndRender);
+document.getElementById('filterMedicaid').addEventListener('change', applyFiltersAndRender);
+document.getElementById('filterPMHC').addEventListener('change', applyFiltersAndRender);
+document.getElementById('filterCDPH').addEventListener('change', applyFiltersAndRender);
+document.getElementById('filterPrescriber').addEventListener('change', applyFiltersAndRender); // NEW
+document.getElementById('fuzzySearchInput').addEventListener('input', applyFiltersAndRender);
 	
 	 // --- LEGEND CONTROL ---
     const legend = L.control({ position: 'bottomright' });
