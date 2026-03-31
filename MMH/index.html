@@ -155,8 +155,14 @@
   Offers virtual services
 </label>
 <label>
+  <input type="checkbox" id="filterTherapist" />
+  Mental health therapist
+</label>
+<label>
   <input type="checkbox" id="filterPrescriber" />
-  Medication prescriber
+  Perinatal prescriber
+  <br>
+  <small>&thinsp;&#40;psychiatrists, physicians,APRNs&#41;</small>
 </label>
 <label>
   <input type="checkbox" id="filterCDPH" />
@@ -322,11 +328,18 @@ function passesFilters(row, filters) {
   if (filters.medicaid && String(row.MEDICAID).toUpperCase() !== 'Y') return false;
   if (filters.pmhc && String(row.PMH_C).toUpperCase() !== 'Y') return false;
 
-  // NEW: medication prescriber filter based on ID starting with "2"
-  if (filters.prescriber) {
-    const idStr = (row.ID || '').toString().trim();
-    if (!idStr.startsWith('2')) return false;
-  }
+  // --- NEW: ID-based filters ---
+  const idStr = (row.ID || '').toString().trim();
+  const isPrescriber = idStr.startsWith('2');
+  const isTherapist = !isPrescriber;  // everything else
+
+  // If prescriber filter is on and therapist filter is off → must be prescriber
+  if (filters.prescriber && !filters.therapist && !isPrescriber) return false;
+
+  // If therapist filter is on and prescriber filter is off → must be therapist
+  if (filters.therapist && !filters.prescriber && !isTherapist) return false;
+
+  // If both are checked, or both are unchecked, we don't constrain by ID.
 
   return true;
 }
@@ -403,7 +416,8 @@ function applyFiltersAndRender() {
     medicaid: document.getElementById('filterMedicaid').checked,
     pmhc: document.getElementById('filterPMHC').checked,
     cdph: document.getElementById('filterCDPH').checked,
-	prescriber: document.getElementById('filterPrescriber').checked
+	prescriber: document.getElementById('filterPrescriber').checked,
+	therapist: document.getElementById('filterTherapist').checked   // NEW
   };
   lastFuzzy = document.getElementById('fuzzySearchInput').value.trim();
   markersLayerGroup.clearLayers();
@@ -550,6 +564,7 @@ document.getElementById('filterMedicaid').addEventListener('change', applyFilter
 document.getElementById('filterPMHC').addEventListener('change', applyFiltersAndRender);
 document.getElementById('filterCDPH').addEventListener('change', applyFiltersAndRender);
 document.getElementById('filterPrescriber').addEventListener('change', applyFiltersAndRender); // NEW
+document.getElementById('filterTherapist').addEventListener('change', applyFiltersAndRender);  // NEW
 document.getElementById('fuzzySearchInput').addEventListener('input', applyFiltersAndRender);
 	
 	 // --- LEGEND CONTROL ---
