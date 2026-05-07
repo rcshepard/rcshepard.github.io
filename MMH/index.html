@@ -149,7 +149,7 @@ body {
   margin: 12px 0 10px;
 }
 
-/* Neighborhood search label / wrapper */
+/* Search label / wrapper */
 .controls-container .fuzzy-search-label {
   margin: 4px 0 0;
 }
@@ -161,8 +161,9 @@ body {
   color: var(--mmh-text-muted);
 }
 
-/* Text input */
-.controls-container input[type="text"] {
+/* Text input & select */
+.controls-container input[type="text"],
+.controls-container select {
   width: 100%;
   font-size: 14px;
   padding: 7px 9px;
@@ -174,7 +175,8 @@ body {
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
-.controls-container input[type="text"]:focus {
+.controls-container input[type="text"]:focus,
+.controls-container select:focus {
   border-color: var(--mmh-accent);
   background-color: #ffffff;
   box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.2);
@@ -346,43 +348,51 @@ body {
   <div class="controls-container" id="filters">
     <h3>Filter providers</h3>
 
-<label>
-  <input type="checkbox" id="filterPMHC" />
-  Has PMH-C specialist
-</label>
-<label>
-  <input type="checkbox" id="filterMedicaid" />
-  Accepts Medicaid
-</label>
-<label>
-  <input type="checkbox" id="filterVirtual" />
-  Offers virtual services
-</label>
-<label>
-  <input type="checkbox" id="filterTherapist" />
-  Mental health therapist
-</label>
-<label>
-  <input type="checkbox" id="filterPrescriber" />
-  Perinatal prescriber
-  <br>
-  <small>&thinsp;&#40;psychiatrists, physicians,APRNs&#41;</small>
-</label>
-<label>
-  <input type="checkbox" id="filterCDPH" />
-  Show&nbsp;<a href="https://www.chicago.gov/city/en/depts/cdph/supp_info/behavioral-health/mental_health_centers.html">CDPH mental health clinics</a>
-</label>
+    <label>
+      <input type="checkbox" id="filterPMHC" />
+      Has PMH-C specialist
+    </label>
+    <label>
+      <input type="checkbox" id="filterMedicaid" />
+      Accepts Medicaid
+    </label>
+    <label>
+      <input type="checkbox" id="filterVirtual" />
+      Offers virtual services
+    </label>
+    <label>
+      <input type="checkbox" id="filterTherapist" />
+      Mental health therapist
+    </label>
+    <label>
+      <input type="checkbox" id="filterPrescriber" />
+      Perinatal prescriber
+      <br>
+      <small>&thinsp;&#40;psychiatrists, physicians,APRNs&#41;</small>
+    </label>
+    <label>
+      <input type="checkbox" id="filterCDPH" />
+      Show&nbsp;<a href="https://www.chicago.gov/city/en/depts/cdph/supp_info/behavioral-health/mental_health_centers.html">CDPH mental health clinics</a>
+    </label>
     <small style="display:block;padding-left:32px;color:#444;">
       Not perinatal specific, but available to Chicagoans regardless of ability to pay, immigration status, or health insurance
-    </small>    <hr />
+    </small>
+
+    <hr />
+
+    <!-- NEW: Provider fuzzy search (uses AGENCY_INDIVIDUAL) -->
     <div class="fuzzy-search-label">
-      <label for="fuzzySearchInput">Neighborhood search</label>
-      <input type="text" id="fuzzySearchInput" placeholder="Fuzzy search by Neighborhood..." />
+      <label for="fuzzySearchInput">Provider search</label>
+      <input type="text" id="fuzzySearchInput" placeholder="Fuzzy search by provider name(s)..." />
     </div>
 
-    <!-- <small> -->
-      <!-- This is a proof of concept map of maternal mental health providers in Chicagoland. -->
-    <!-- </small> -->
+    <!-- NEW: Neighborhood dropdown -->
+    <div class="fuzzy-search-label" style="margin-top:10px;">
+      <label for="neighborhoodSelect">Neighborhood filter</label>
+      <select id="neighborhoodSelect">
+        <option value="">All neighborhoods</option>
+      </select>
+    </div>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -397,18 +407,18 @@ body {
     // --- CONFIG ---
     const csvFilePath = 'https://familyengagementrg.github.io/MMH_for_GIS.csv';
     const hiddenFields = [
-  'LATITUDE',
-  'LONGITUDE',
-  'ID',
-  'NAME',
-  'URL',
-  'CITY',
-  'STATE',
-  'ZIP',
-  'AGENCY_INDIVIDUAL',
-  'NUM_PROVIDERS',
-  'NEIGHBORHOODS'
-];
+      'LATITUDE',
+      'LONGITUDE',
+      'ID',
+      'NAME',
+      'URL',
+      'CITY',
+      'STATE',
+      'ZIP',
+      'AGENCY_INDIVIDUAL',
+      'NUM_PROVIDERS',
+      'NEIGHBORHOODS'
+    ];
     const map = L.map('map', { zoomControl: true}).setView([41.88, -87.63], 11);
 
     // Basemap layer
@@ -422,9 +432,9 @@ body {
       .then(geojsonData => {
         L.geoJSON(geojsonData, {
           style: {
-            color: '#444',         
-            fillColor: '#666',     
-            fillOpacity: 0.7,      
+            color: '#444',
+            fillColor: '#666',
+            fillOpacity: 0.7,
             weight: 1
           }
         }).addTo(map);
@@ -432,121 +442,124 @@ body {
 
     const markersLayerGroup = L.layerGroup().addTo(map);
     let allProviderData = [];
-    let fuse = null;        
-    let lastFuzzy = '';     
+    let fuse = null;
+    let lastFuzzy = '';
+    let lastNeighborhood = '';   // NEW: store selected neighborhood
 
-// Map raw column names to nicer labels for the popup table
-const fieldLabelMap = {
-  'ADDRESS': 'Address',
-  'VIRTUAL': 'Virtual options',
-  'MEDICAID': 'Accepts Medicaid',
-  'PMH_C': 'PMH Certified',
-  'CDPH': 'CDPH'
-};
+    // Map raw column names to nicer labels for the popup table
+    const fieldLabelMap = {
+      'ADDRESS': 'Address',
+      'VIRTUAL': 'Virtual options',
+      'MEDICAID': 'Accepts Medicaid',
+      'PMH_C': 'PMH Certified',
+      'CDPH': 'CDPH'
+    };
 
-// Convert "Y"/"N" to "Yes"/"No" for selected fields
-function formatFieldValue(key, rawValue) {
-  const ynFields = ['VIRTUAL', 'MEDICAID', 'PMH_C', 'CDPH'];
-  if (ynFields.includes(key)) {
-    const val = String(rawValue).trim().toUpperCase();
-    if (val === 'Y') return 'Yes';
-    if (val === 'N') return 'No';
-  }
-  return rawValue;
-}
+    // Convert "Y"/"N" to "Yes"/"No" for selected fields
+    function formatFieldValue(key, rawValue) {
+      const ynFields = ['VIRTUAL', 'MEDICAID', 'PMH_C', 'CDPH'];
+      if (ynFields.includes(key)) {
+        const val = String(rawValue).trim().toUpperCase();
+        if (val === 'Y') return 'Yes';
+        if (val === 'N') return 'No';
+      }
+      return rawValue;
+    }
 
     function buildPopupHtml(row) {
       const url = row.URL && row.URL.trim() ? row.URL.trim() : null;
       const name = row.NAME || 'Provider';
-let html = '<div class="provider-popup">';
-html += '<span class="provider-popup-title">' + name + '</span>';
+      let html = '<div class="provider-popup">';
+      html += '<span class="provider-popup-title">' + name + '</span>';
       if (url) {
         const safeUrl = url.startsWith('https') ? url : 'https://' + url;
         html += '<br/><a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer">Website</a>';
       }
-        html += '<br/><br/><table>';
-  for (const key in row) {
-    if (!row.hasOwnProperty(key) || hiddenFields.includes(key) || key.startsWith('Unnamed')) continue;
+      html += '<br/><br/><table>';
+      for (const key in row) {
+        if (!row.hasOwnProperty(key) || hiddenFields.includes(key) || key.startsWith('Unnamed')) continue;
 
-    const rawValue = row[key];
-    const valueStr = rawValue == null ? '' : String(rawValue).trim();
-    if (valueStr === '') continue;
+        const rawValue = row[key];
+        const valueStr = rawValue == null ? '' : String(rawValue).trim();
+        if (valueStr === '') continue;
 
-    // Use friendly label if defined, otherwise fall back to a cleaned-up key
-    const label = fieldLabelMap[key] || key.replace(/_/g, ' ');
+        // Use friendly label if defined, otherwise fall back to a cleaned-up key
+        const label = fieldLabelMap[key] || key.replace(/_/g, ' ');
 
-    // Convert Y/N to Yes/No where appropriate
-    const formattedValue = formatFieldValue(key, valueStr);
+        // Convert Y/N to Yes/No where appropriate
+        const formattedValue = formatFieldValue(key, valueStr);
 
-    html += '<tr><th>' + label + ':</th><td>' + formattedValue + '</td></tr>';
-  }
-  html += '</table></div>';
+        html += '<tr><th>' + label + ':</th><td>' + formattedValue + '</td></tr>';
+      }
+      html += '</table></div>';
       return html;
     }
 
-// NEW: define two Leaflet icons that use your PNG files
-const agencyIcon = L.icon({
-  iconUrl: 'https://rcshepard.github.io/MMH/agency-icon.png',      // adjust path if needed
-  iconSize:     [32, 32],
-  iconAnchor:   [16, 32],
-  popupAnchor:  [0, -32]
-});
-
-const individualIcon = L.icon({
-  iconUrl: 'https://rcshepard.github.io/MMH/individual-icon.png',  // adjust path if needed
-  iconSize:     [32, 32],
-  iconAnchor:   [16, 32],
-  popupAnchor:  [0, -32]
-});
-
-function createProviderMarker(row) {
-  const lat = parseFloat(row.LATITUDE);
-  const lng = parseFloat(row.LONGITUDE);
-  if (isNaN(lat) || isNaN(lng)) return null;
-
-  const numProviders = row.NUM_PROVIDERS ? parseInt(row.NUM_PROVIDERS, 10) : null;
-  const type = (row.AGENCY_INDIVIDUAL || '').toString().trim().toUpperCase();
-  const isAgency = type === 'AGENCY' || type === 'A' || type === 'AGENCIES';
-
-  // CHANGED: instead of divIcon + span class, pick one of the two image icons
-  const icon = isAgency ? agencyIcon : individualIcon;
-
-  // UNCHANGED: create marker with that icon
-  const marker = L.marker([lat, lng], { icon });
-
-  if (!isNaN(numProviders) && numProviders > 0) {
-    const labelHtml = '<div class="provider-label">' + numProviders + '</div>';
-    marker.bindTooltip(labelHtml, {
-      permanent: true,
-      direction: 'top',
-      className: 'provider-count-label'
+    // NEW: define two Leaflet icons that use your PNG files
+    const agencyIcon = L.icon({
+      iconUrl: 'https://rcshepard.github.io/MMH/agency-icon.png',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32]
     });
-  }
 
-  marker.bindPopup(buildPopupHtml(row));
-  return marker;
-}
+    const individualIcon = L.icon({
+      iconUrl: 'https://rcshepard.github.io/MMH/individual-icon.png',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32]
+    });
 
-function passesFilters(row, filters) {
-  if (filters.virtual && String(row.VIRTUAL).toUpperCase() !== 'Y') return false;
-  if (filters.medicaid && String(row.MEDICAID).toUpperCase() !== 'Y') return false;
-  if (filters.pmhc && String(row.PMH_C).toUpperCase() !== 'Y') return false;
+    function createProviderMarker(row) {
+      const lat = parseFloat(row.LATITUDE);
+      const lng = parseFloat(row.LONGITUDE);
+      if (isNaN(lat) || isNaN(lng)) return null;
 
-  // --- NEW: ID-based filters ---
-  const idStr = (row.ID || '').toString().trim();
-  const isPrescriber = idStr.startsWith('2');
-  const isTherapist = !isPrescriber;  // everything else
+      const numProviders = row.NUM_PROVIDERS ? parseInt(row.NUM_PROVIDERS, 10) : null;
+      const type = (row.AGENCY_INDIVIDUAL || '').toString().trim().toUpperCase();
+      const isAgency = type === 'AGENCY' || type === 'A' || type === 'AGENCIES';
 
-  // If prescriber filter is on and therapist filter is off → must be prescriber
-  if (filters.prescriber && !filters.therapist && !isPrescriber) return false;
+      const icon = isAgency ? agencyIcon : individualIcon;
 
-  // If therapist filter is on and prescriber filter is off → must be therapist
-  if (filters.therapist && !filters.prescriber && !isTherapist) return false;
+      const marker = L.marker([lat, lng], { icon });
 
-  // If both are checked, or both are unchecked, we don't constrain by ID.
+      if (!isNaN(numProviders) && numProviders > 0) {
+        const labelHtml = '<div class="provider-label">' + numProviders + '</div>';
+        marker.bindTooltip(labelHtml, {
+          permanent: true,
+          direction: 'top',
+          className: 'provider-count-label'
+        });
+      }
 
-  return true;
-}
+      marker.bindPopup(buildPopupHtml(row));
+      return marker;
+    }
+
+    function passesFilters(row, filters) {
+      if (filters.virtual && String(row.VIRTUAL).toUpperCase() !== 'Y') return false;
+      if (filters.medicaid && String(row.MEDICAID).toUpperCase() !== 'Y') return false;
+      if (filters.pmhc && String(row.PMH_C).toUpperCase() !== 'Y') return false;
+
+      // --- NEW: ID-based filters ---
+      const idStr = (row.ID || '').toString().trim();
+      const isPrescriber = idStr.startsWith('2');
+      const isTherapist = !isPrescriber;  // everything else
+
+      // If prescriber filter is on and therapist filter is off → must be prescriber
+      if (filters.prescriber && !filters.therapist && !isPrescriber) return false;
+
+      // If therapist filter is on and prescriber filter is off → must be therapist
+      if (filters.therapist && !filters.prescriber && !isTherapist) return false;
+
+      // Neighborhood filter
+      if (filters.neighborhood) {
+        const neighborhoods = (row.NEIGHBORHOODS || '').split(',').map(s => s.trim());
+        if (!neighborhoods.includes(filters.neighborhood)) return false;
+      }
+
+      return true;
+    }
 
     const clusterRadiusMeters = 100;
     function clusterMarkers(markers) {
@@ -579,163 +592,149 @@ function passesFilters(row, filters) {
       });
       return clusters;
     }
-	
-	function classifyType(row) {
-  // Normalize AGENCY_INDIVIDUAL field
-  const type = (row.AGENCY_INDIVIDUAL || '').toString().trim().toUpperCase();
-  if (!type) return 'unknown';
 
-  // Adjust logic if your data uses different codes
-  if (type === 'AGENCY' || type === 'A' || type === 'AGENCIES') return 'agency';
-  if (type === 'INDIVIDUAL' || type === 'I' || type === 'INDIVIDUALS') return 'individual';
+    function classifyType(row) {
+      // Normalize AGENCY_INDIVIDUAL field
+      const type = (row.AGENCY_INDIVIDUAL || '').toString().trim().toUpperCase();
+      if (!type) return 'unknown';
 
-  // Fallback: if the field literally says "MIXED" or similar:
-  if (type === 'MIXED' || type === 'BOTH') return 'mixed';
+      if (type === 'AGENCY' || type === 'A' || type === 'AGENCIES') return 'agency';
+      if (type === 'INDIVIDUAL' || type === 'I' || type === 'INDIVIDUALS') return 'individual';
+      if (type === 'MIXED' || type === 'BOTH') return 'mixed';
 
-  return 'unknown';
-}
-
-function getColorForType(typesSet) {
-  // typesSet is a Set like { 'agency' } or { 'individual', 'agency' }
-
-  const hasAgency = typesSet.has('agency');
-  const hasIndividual = typesSet.has('individual');
-
-  // Brand colors:
-  // red:    #800000
-  // blue:   #007396
-  // violet: #59315F
-
-  if (hasAgency && hasIndividual) return '#59315F';  // violet
-  if (hasAgency) return '#007396';                   // blue
-  if (hasIndividual) return '#800000';               // red
-
-  // default/unknown
-  return '#666666';
-}
-
-function applyFiltersAndRender() {
-  const filters = {
-    virtual: document.getElementById('filterVirtual').checked,
-    medicaid: document.getElementById('filterMedicaid').checked,
-    pmhc: document.getElementById('filterPMHC').checked,
-    cdph: document.getElementById('filterCDPH').checked,
-	prescriber: document.getElementById('filterPrescriber').checked,
-	therapist: document.getElementById('filterTherapist').checked   // NEW
-  };
-  lastFuzzy = document.getElementById('fuzzySearchInput').value.trim();
-  markersLayerGroup.clearLayers();
-
-  // CDPH filtering logic
-  let rowsFiltered = allProviderData.filter(row => {
-    if (filters.cdph) {
-      // Only show CDPH backup sites
-      return String(row.CDPH).toUpperCase() === 'Y';
-    } else {
-      // Hide CDPH backups
-      return String(row.CDPH).toUpperCase() !== 'Y';
+      return 'unknown';
     }
-  });
 
-  // Apply the other filters
-  rowsFiltered = rowsFiltered.filter(row => passesFilters(row, filters));
+    function getColorForType(typesSet) {
+      const hasAgency = typesSet.has('agency');
+      const hasIndividual = typesSet.has('individual');
 
-  // Fuzzy search by NEIGHBORHOODS
-  if (lastFuzzy && fuse) {
-    const fuseResults = fuse.search(lastFuzzy);
-    const ids = new Set(fuseResults.map(res => res.item.ID));
-    rowsFiltered = rowsFiltered.filter(row => ids.has(row.ID));
-  }
+      if (hasAgency && hasIndividual) return '#59315F';  // violet
+      if (hasAgency) return '#007396';                   // blue
+      if (hasIndividual) return '#800000';               // red
 
-  if (!rowsFiltered.length) return;
-
-  // --- Aggregate by coordinate ---
-  // Use a small rounding to avoid floating-point mismatches
-  const coordMap = new Map(); 
-  rowsFiltered.forEach(row => {
-    const lat = parseFloat(row.LATITUDE);
-    const lng = parseFloat(row.LONGITUDE);
-    if (isNaN(lat) || isNaN(lng)) return;
-
-    const latKey = lat.toFixed(6);
-    const lngKey = lng.toFixed(6);
-    const key = latKey + ',' + lngKey;
-
-    const numProviders = row.NUM_PROVIDERS ? parseInt(row.NUM_PROVIDERS, 10) : 1;
-    const type = classifyType(row);
-
-    if (!coordMap.has(key)) {
-      coordMap.set(key, {
-        lat: lat,
-        lng: lng,
-        totalProviders: 0,
-        types: new Set(),
-        rows: []
-      });
+      return '#666666';
     }
-    const entry = coordMap.get(key);
-    entry.totalProviders += (isNaN(numProviders) ? 1 : numProviders);
-    if (type !== 'unknown') entry.types.add(type);
-    entry.rows.push(row);
-  });
 
-  const circles = [];
-  const scaleFactor = 3;  // adjust to taste
+    function applyFiltersAndRender() {
+      const filters = {
+        virtual: document.getElementById('filterVirtual').checked,
+        medicaid: document.getElementById('filterMedicaid').checked,
+        pmhc: document.getElementById('filterPMHC').checked,
+        cdph: document.getElementById('filterCDPH').checked,
+        prescriber: document.getElementById('filterPrescriber').checked,
+        therapist: document.getElementById('filterTherapist').checked,
+        neighborhood: document.getElementById('neighborhoodSelect').value || ''
+      };
 
-  coordMap.forEach(entry => {
-    const count = entry.totalProviders || entry.rows.length;
-    const color = getColorForType(entry.types);
-    const radius = Math.max(6, Math.sqrt(count) * scaleFactor);
+      lastFuzzy = document.getElementById('fuzzySearchInput').value.trim();
+      lastNeighborhood = filters.neighborhood;
+      markersLayerGroup.clearLayers();
 
-    const circle = L.circleMarker([entry.lat, entry.lng], {
-      radius: radius,
-      color: color,
-      weight: 2,
-      fillColor: color,
-      fillOpacity: 0.6
-    }).addTo(markersLayerGroup);
-
-    // Tooltip: total count
-    circle.bindTooltip(
-      '<div class="provider-label">' + count + '</div>',
-      {
-        permanent: true,
-        direction: 'center',
-        className: 'provider-count-label'
-      }
-    );
-
-    // Popup: combined details of all rows at this location
-    circle.on('click', () => {
-      let html = '';
-      entry.rows.forEach((row, idx) => {
-        const content = buildPopupHtml(row);
-        if (content) {
-          if (html !== '') { html += '<hr/>'; }
-          html += content;
+      // CDPH filtering logic
+      let rowsFiltered = allProviderData.filter(row => {
+        if (filters.cdph) {
+          // Only show CDPH backup sites
+          return String(row.CDPH).toUpperCase() === 'Y';
+        } else {
+          // Hide CDPH backups
+          return String(row.CDPH).toUpperCase() !== 'Y';
         }
       });
-      circle.bindPopup(html).openPopup();
-    });
 
-    circles.push(circle);
-  });
-//Come back to this section if you want to get the zoom to fit the points...
-  <!-- if (circles.length) { -->
-    <!-- const group = L.featureGroup(circles); -->
-    <!-- const bounds = group.getBounds().pad(0.2); -->
+      // Apply other filters (including neighborhood)
+      rowsFiltered = rowsFiltered.filter(row => passesFilters(row, filters));
 
-    <!-- // Use fitBounds, but clamp resulting zoom so it never goes out past 10 -->
-    <!-- map.fitBounds(bounds); -->
+      // Fuzzy search by NAME (CHANGED)
+      if (lastFuzzy && fuse) {
+        const fuseResults = fuse.search(lastFuzzy);
+        const ids = new Set(fuseResults.map(res => res.item.ID));
+        rowsFiltered = rowsFiltered.filter(row => ids.has(row.ID));
+      }
 
-    <!-- // If fitBounds chose a zoom less than 10 (too zoomed out), force it back in -->
-    <!-- if (map.getZoom() < 12) { -->
-      <!-- map.setZoom(12); -->
-      <!-- // Optionally, recenter on the bounds center so you're still roughly over Chicago -->
-      <!-- map.panTo(bounds.getCenter()); -->
-    <!-- } -->
-  <!-- } -->
-}
+      if (!rowsFiltered.length) return;
+
+      // --- Aggregate by coordinate ---
+      const coordMap = new Map();
+      rowsFiltered.forEach(row => {
+        const lat = parseFloat(row.LATITUDE);
+        const lng = parseFloat(row.LONGITUDE);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const latKey = lat.toFixed(6);
+        const lngKey = lng.toFixed(6);
+        const key = latKey + ',' + lngKey;
+
+        const numProviders = row.NUM_PROVIDERS ? parseInt(row.NUM_PROVIDERS, 10) : 1;
+        const type = classifyType(row);
+
+        if (!coordMap.has(key)) {
+          coordMap.set(key, {
+            lat: lat,
+            lng: lng,
+            totalProviders: 0,
+            types: new Set(),
+            rows: []
+          });
+        }
+        const entry = coordMap.get(key);
+        entry.totalProviders += (isNaN(numProviders) ? 1 : numProviders);
+        if (type !== 'unknown') entry.types.add(type);
+        entry.rows.push(row);
+      });
+
+      const circles = [];
+      const scaleFactor = 3;
+
+      coordMap.forEach(entry => {
+        const count = entry.totalProviders || entry.rows.length;
+        const color = getColorForType(entry.types);
+        const radius = Math.max(6, Math.sqrt(count) * scaleFactor);
+
+        const circle = L.circleMarker([entry.lat, entry.lng], {
+          radius: radius,
+          color: color,
+          weight: 2,
+          fillColor: color,
+          fillOpacity: 0.6
+        }).addTo(markersLayerGroup);
+
+        circle.bindTooltip(
+          '<div class="provider-label">' + count + '</div>',
+          {
+            permanent: true,
+            direction: 'center',
+            className: 'provider-count-label'
+          }
+        );
+
+        circle.on('click', () => {
+          let html = '';
+          entry.rows.forEach((row, idx) => {
+            const content = buildPopupHtml(row);
+            if (content) {
+              if (html !== '') { html += '<hr/>'; }
+              html += content;
+            }
+          });
+          circle.bindPopup(html).openPopup();
+        });
+
+        circles.push(circle);
+      });
+
+      // NEW: zoom to filtered results (especially useful for neighborhood selection)
+  if (circles.length && shouldZoom) {
+    const group = L.featureGroup(circles);
+        const bounds = group.getBounds().pad(0.2);
+        map.fitBounds(bounds);
+
+        if (map.getZoom() < 12) {
+          map.setZoom(12);
+          map.panTo(bounds.getCenter());
+        }
+      }
+    }
 
     Papa.parse(csvFilePath, {
       header: true,
@@ -748,12 +747,31 @@ function applyFiltersAndRender() {
           return hasId || hasName;
         });
         allProviderData = rows;
+
+        // FUSE NOW USES AGENCY_INDIVIDUAL (CHANGED)
         fuse = new Fuse(allProviderData, {
-          keys: ['NEIGHBORHOODS'],
+          keys: ['NAME'],
           threshold: 0.4,
           ignoreLocation: true
         });
-		
+
+        // NEW: populate neighborhood dropdown
+        const neighborhoodSet = new Set();
+        allProviderData.forEach(row => {
+          const raw = row.NEIGHBORHOODS || '';
+          raw.split(',').forEach(n => {
+            const trimmed = n.trim();
+            if (trimmed) neighborhoodSet.add(trimmed);
+          });
+        });
+        const neighborhoods = Array.from(neighborhoodSet).sort((a, b) => a.localeCompare(b));
+        const neighborhoodSelect = document.getElementById('neighborhoodSelect');
+        neighborhoods.forEach(n => {
+          const opt = document.createElement('option');
+          opt.value = n;
+          opt.textContent = n;
+          neighborhoodSelect.appendChild(opt);
+        });
 
         applyFiltersAndRender();
       },
@@ -763,33 +781,39 @@ function applyFiltersAndRender() {
       }
     });
 
-document.getElementById('filterVirtual').addEventListener('change', applyFiltersAndRender);
-document.getElementById('filterMedicaid').addEventListener('change', applyFiltersAndRender);
-document.getElementById('filterPMHC').addEventListener('change', applyFiltersAndRender);
-document.getElementById('filterCDPH').addEventListener('change', applyFiltersAndRender);
-document.getElementById('filterPrescriber').addEventListener('change', applyFiltersAndRender); // NEW
-document.getElementById('filterTherapist').addEventListener('change', applyFiltersAndRender);  // NEW
-document.getElementById('fuzzySearchInput').addEventListener('input', applyFiltersAndRender);
-	
-	 // --- LEGEND CONTROL ---
+    document.getElementById('filterVirtual').addEventListener('change', applyFiltersAndRender);
+    document.getElementById('filterMedicaid').addEventListener('change', applyFiltersAndRender);
+    document.getElementById('filterPMHC').addEventListener('change', applyFiltersAndRender);
+    document.getElementById('filterCDPH').addEventListener('change', applyFiltersAndRender);
+    document.getElementById('filterPrescriber').addEventListener('change', applyFiltersAndRender);
+    document.getElementById('filterTherapist').addEventListener('change', applyFiltersAndRender);
+
+    // Fuzzy provider search
+    document.getElementById('fuzzySearchInput')
+  .addEventListener('input', () => applyFiltersAndRender(false));
+
+    // Neighborhood dropdown change
+    document.getElementById('neighborhoodSelect').addEventListener('change', applyFiltersAndRender);
+
+    // --- LEGEND CONTROL ---
     const legend = L.control({ position: 'bottomright' });
 
     legend.onAdd = function (map) {
       const div = L.DomUtil.create('div', 'info legend');
 
-div.innerHTML =
-  '<h4>Provider Type</h4>' +
-  '<div><i style="background:#800000"></i>Individual</div>' +
-  '<div><i style="background:#007396"></i>Agency</div>' +
-  '<div><i style="background:#59315F"></i>Agency and Individual Providers</div>';
+      div.innerHTML =
+        '<h4>Provider Type</h4>' +
+        '<div><i style="background:#800000"></i>Individual</div>' +
+        '<div><i style="background:#007396"></i>Agency</div>' +
+        '<div><i style="background:#59315F"></i>Agency and Individual Providers</div>';
 
       return div;
     };
 
     legend.addTo(map);
-	L.control.zoom({
-    position: 'topright'
-}).addTo(map);
+    L.control.zoom({
+      position: 'topright'
+    }).addTo(map);
 
   </script>
 </body>
