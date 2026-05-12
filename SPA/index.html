@@ -15,7 +15,6 @@
       background-size: cover;
       position: relative;
     }
-    /* A semi-transparent overlay for readability (50% opacity) */
     body::before {
       content: "";
       position: fixed;
@@ -27,11 +26,14 @@
       position: relative;
       z-index: 1;
       max-width: 700px;
-      margin: 40px auto;
+      margin: 40px auto 24px auto;
       padding: 32px;
       background: #fff;
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.09);
+    }
+    .container.second {
+      margin-top: 0;
     }
     h2 {
       font-weight: 700;
@@ -76,6 +78,20 @@
     <div class="resource-links">
       <a href="https://guides.lib.uchicago.edu/GIS" target="_blank">GIS LibGuide</a>
       <a href="https://geo.btaa.org" target="_blank">Big Ten Academic Alliance Geoportal</a>
+    </div>
+  </div>
+
+  <!-- SECOND BOX STARTS HERE -->
+  <div class="container second">
+    <h2>Spatial Awareness:<br>GIS Workshop II</h2>
+    <p>
+      <strong>Slides:</strong>
+      <a href="https://rcshepard.github.io/SPA/SPAII_slides.pdf" target="_blank">Follow along</a>
+    </p>
+    <hr>
+    <h4>Resources</h4>
+    <div class="resource-links">
+      <a href="https://rcshepard.github.io/SPA/data" target="_blank">Workshop Data Portal</a>
     </div>
   </div>
 </body>
