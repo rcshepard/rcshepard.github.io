@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marlow Harbor Storm Signal Collection</title>
+<meta name="description" content="A demonstration digital collection: 20 items from the Marlow Harbor storm signal service, 1889-1953.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F1E26;
+    --ink-2:#18303B;
+    --paper:#E4E7E1;
+    --paper-2:#D6DBD4;
+    --rule:#A7B1A9;
+    --muted:#5B6A66;
+    --red:#C0271B;
+    --yellow:#E5AF23;
+    --blue:#1C4C86;
+    --cloth:#F2F1EC;
+    --coal:#151515;
+    --display:"Saira Condensed","Arial Narrow",Impact,sans-serif;
+    --body:"Public Sans","Helvetica Neue",Arial,sans-serif;
+    --data:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--body);font-size:16px;line-height:1.6;
+  }
+  h1,h2,h3{font-family:var(--display);text-transform:uppercase;letter-spacing:.01em;line-height:.95;margin:0;font-weight:800}
+  a{color:var(--blue)}
+  button{font:inherit}
+  :focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+
+  .eyebrow{
+    font-family:var(--data);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 .5rem
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 clamp(1rem,4vw,2.5rem)}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--ink);color:var(--cloth);border-bottom:6px solid var(--red)}
+  .bar{display:flex;align-items:center;gap:1rem;padding:.85rem 0;flex-wrap:wrap}
+  .mark{display:flex;align-items:center;gap:.6rem;margin-right:auto;text-decoration:none;color:inherit}
+  .mark svg{display:block;box-shadow:0 1px 0 rgba(255,255,255,.25)}
+  .mark b{font-family:var(--display);font-weight:800;font-size:1.15rem;text-transform:uppercase;letter-spacing:.02em;display:block}
+  .mark span{font-family:var(--data);font-size:.66rem;letter-spacing:.16em;color:#9BB0AE;text-transform:uppercase}
+  nav{display:flex;gap:.15rem;flex-wrap:wrap}
+  nav button{
+    background:none;border:0;color:#B9C8C6;cursor:pointer;
+    font-family:var(--display);text-transform:uppercase;font-weight:700;font-size:1rem;
+    letter-spacing:.05em;padding:.4rem .6rem;border-bottom:3px solid transparent
+  }
+  nav button:hover{color:var(--cloth)}
+  nav button[aria-current="page"]{color:var(--cloth);border-bottom-color:var(--yellow)}
+
+  /* ---------- hero ---------- */
+  .hero{background:var(--ink);color:var(--cloth);padding:clamp(1.5rem,5vw,3rem) 0 clamp(2rem,6vw,3.5rem)}
+  .halyard{position:relative;height:104px;margin-bottom:1.75rem}
+  .halyard .line{position:absolute;left:0;right:0;top:9px;height:2px;background:#41585F}
+  .hoist{position:absolute;top:11px;left:0;display:flex;gap:clamp(6px,1.4vw,16px)}
+  .hoist .fl{transform-origin:top center;animation:hoisted .7s cubic-bezier(.2,.9,.25,1) backwards}
+  .hoist .fl svg{display:block;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35))}
+  @keyframes hoisted{from{transform:translateY(-88px) rotate(-4deg);opacity:0}to{transform:none;opacity:1}}
+  .hero h1{font-size:clamp(2.4rem,7.5vw,5.2rem);max-width:22ch}
+  .hero h1 em{font-style:normal;color:var(--yellow)}
+  .hero .lede{max-width:56ch;margin:1.25rem 0 0;color:#CBD6D3;font-size:1.05rem}
+  .stats{display:flex;flex-wrap:wrap;gap:0;margin-top:2.25rem;border-top:1px solid #37505A}
+  .stats div{padding:.9rem 1.5rem .9rem 0;margin-right:1.5rem;border-right:1px solid #37505A}
+  .stats div:last-child{border-right:0}
+  .stats b{font-family:var(--display);font-size:1.9rem;font-weight:800;display:block;line-height:1}
+  .stats span{font-family:var(--data);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:#93A8A6}
+
+  /* ---------- views ---------- */
+  .view{display:none;padding:clamp(2rem,5vw,3.25rem) 0}
+  .view.on{display:block}
+  .view > h2{font-size:clamp(1.6rem,4vw,2.4rem);margin-bottom:.35rem}
+  .view > .sub{color:var(--muted);max-width:62ch;margin:.15rem 0 2rem}
+
+  /* ---------- browse ---------- */
+  .browse{display:grid;grid-template-columns:245px 1fr;gap:clamp(1.5rem,3vw,2.75rem);align-items:start}
+  .facets{position:sticky;top:1rem}
+  .facets h3{font-size:.78rem;font-family:var(--data);font-weight:500;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin:1.6rem 0 .5rem;font-weight:500}
+  .facets h3:first-of-type{margin-top:1.25rem}
+  .search{position:relative}
+  .search input{
+    width:100%;padding:.7rem .8rem;border:2px solid var(--ink);background:var(--cloth);
+    font:inherit;border-radius:0
+  }
+  .facet{
+    display:flex;width:100%;gap:.5rem;align-items:baseline;text-align:left;cursor:pointer;
+    background:none;border:0;padding:.22rem 0;color:var(--ink);font-size:.93rem
+  }
+  .facet:hover{color:var(--red)}
+  .facet .n{font-family:var(--data);font-size:.75rem;color:var(--muted);margin-left:auto}
+  .facet[aria-pressed="true"]{font-weight:600;color:var(--red)}
+  .facet[aria-pressed="true"] .k{box-shadow:inset 0 -.6em 0 rgba(229,175,35,.5)}
+  .resultbar{display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:.6rem;margin-bottom:1.5rem}
+  .count{font-family:var(--data);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase}
+  .clear{margin-left:auto;background:none;border:0;text-decoration:underline;cursor:pointer;color:var(--muted);font-size:.85rem}
+  .clear:hover{color:var(--red)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:1.5rem 1.35rem;list-style:none;padding:0;margin:0}
+  .card{background:none;border:0;padding:0;text-align:left;cursor:pointer;display:block;width:100%}
+  .card .thumb{
+    position:relative;background:var(--paper-2);border:1px solid var(--rule);
+    aspect-ratio:4/3;display:grid;place-items:center;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease
+  }
+  .card .thumb svg{width:58%;height:auto;filter:drop-shadow(0 2px 4px rgba(15,30,38,.28))}
+  .card .thumb .id{position:absolute;left:0;bottom:0;font-family:var(--data);font-size:.62rem;letter-spacing:.06em;background:var(--ink);color:var(--cloth);padding:.15rem .4rem}
+  .card:hover .thumb{transform:translateY(-4px);box-shadow:0 10px 0 -4px var(--ink)}
+  .card h3{font-size:1.06rem;font-weight:700;margin:.65rem 0 .2rem;text-transform:none;font-family:var(--display);letter-spacing:0;line-height:1.1}
+  .card .meta{font-family:var(--data);font-size:.72rem;color:var(--muted);letter-spacing:.05em}
+  .empty{border:2px dashed var(--rule);padding:2rem;text-align:center;color:var(--muted)}
+
+  /* ---------- subjects ---------- */
+  .bars{list-style:none;padding:0;margin:0;max-width:760px}
+  .bars li{display:grid;grid-template-columns:1fr 34px;gap:.75rem;align-items:center;padding:.3rem 0;border-bottom:1px solid var(--paper-2)}
+  .bars button{background:none;border:0;padding:0;cursor:pointer;text-align:left;width:100%}
+  .bars .lab{font-size:.95rem}
+  .bars .track{height:9px;background:var(--paper-2);margin-top:.28rem}
+  .bars .fill{height:100%;background:var(--blue);display:block}
+  .bars button:hover .fill{background:var(--red)}
+  .bars .n{font-family:var(--data);font-size:.78rem;color:var(--muted);text-align:right}
+
+  /* ---------- timeline ---------- */
+  .decade{border-top:2px solid var(--ink);padding:.75rem 0 1.25rem}
+  .decade .dl{font-family:var(--display);font-weight:800;font-size:1.5rem}
+  .decade .dl small{font-family:var(--data);font-weight:400;font-size:.7rem;color:var(--muted);letter-spacing:.12em;margin-left:.6rem}
+  .track2{position:relative;height:84px;margin-top:.4rem}
+  .track2 .axis{position:absolute;left:0;right:0;top:66px;height:1px;background:var(--rule)}
+  .pin{position:absolute;transform:translateX(-50%);background:none;border:0;padding:0;cursor:pointer;text-align:center;width:52px}
+  .pin svg{width:38px;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 2px 3px rgba(15,30,38,.3))}
+  .pin .y{font-family:var(--data);font-size:.66rem;color:var(--muted);margin-top:.3rem;display:block}
+  .pin:hover svg{transform:translateY(-3px)}
+  .pin:hover .y{color:var(--red)}
+
+  /* ---------- stations ---------- */
+  .chart{border:1px solid var(--rule);background:#DDE3DD}
+  .chart text{font-family:var(--data)}
+  .station{cursor:pointer}
+  .station circle{fill:var(--red);stroke:var(--cloth);stroke-width:2}
+  .station:hover circle{fill:var(--blue)}
+  .station text{font-family:var(--display);font-weight:700;font-size:15px;text-transform:uppercase;fill:var(--ink)}
+  .chart .grid-l{stroke:#C2CAC3;stroke-width:1}
+  .chart .sounding{font-size:9px;fill:#8B9891}
+  .chart .tick{font-size:9px;fill:#6E7C76;letter-spacing:.08em}
+
+  /* ---------- data ---------- */
+  .tablewrap{overflow-x:auto;border:1px solid var(--rule);background:var(--cloth)}
+  table{border-collapse:collapse;width:100%;font-family:var(--data);font-size:.78rem}
+  th,td{text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--paper-2);white-space:nowrap;vertical-align:top}
+  th{background:var(--ink);color:var(--cloth);font-weight:500;letter-spacing:.08em;text-transform:uppercase;font-size:.68rem;position:sticky;top:0}
+  td.t{white-space:normal;min-width:22rem}
+  .btn{
+    display:inline-block;background:var(--ink);color:var(--cloth);border:0;cursor:pointer;
+    font-family:var(--display);text-transform:uppercase;font-weight:700;letter-spacing:.05em;
+    padding:.6rem 1.1rem;font-size:1rem;text-decoration:none
+  }
+  .btn:hover{background:var(--red)}
+
+  /* ---------- prose ---------- */
+  .prose{max-width:62ch}
+  .prose h3{font-size:1.1rem;margin:2rem 0 .4rem}
+  .prose p{margin:.5rem 0}
+  .prose code{font-family:var(--data);font-size:.85em;background:var(--paper-2);padding:.1em .35em}
+  .note{border-left:5px solid var(--yellow);padding:.1rem 0 .1rem 1rem;margin:1.5rem 0}
+
+  /* ---------- modal ---------- */
+  .scrim{
+    position:fixed;inset:0;background:rgba(15,30,38,.72);display:none;
+    z-index:50;padding:clamp(.5rem,3vw,2rem);overflow:auto
+  }
+  .scrim.on{display:block}
+  .sheet{
+    max-width:960px;margin:0 auto;background:var(--paper);border-top:6px solid var(--red);
+    display:grid;grid-template-columns:minmax(0,340px) 1fr
+  }
+  .sheet .obj{background:var(--ink);padding:2rem;display:grid;place-items:center}
+  .sheet .obj svg{width:100%;max-width:250px;height:auto;filter:drop-shadow(0 6px 14px rgba(0,0,0,.45))}
+  .sheet .obj .cap{font-family:var(--data);font-size:.66rem;color:#8DA3A1;text-align:center;margin-top:1.25rem;line-height:1.5}
+  .sheet .body{padding:clamp(1.25rem,3vw,2rem)}
+  .sheet h2{font-size:clamp(1.3rem,2.6vw,1.9rem);text-transform:none;letter-spacing:0;line-height:1.05;padding-right:2rem}
+  .close{position:absolute;top:0;right:0;background:var(--ink);color:var(--cloth);border:0;cursor:pointer;width:44px;height:44px;font-size:1.2rem}
+  .close:hover{background:var(--red)}
+  .sheetpos{position:relative}
+  dl.fields{margin:1.5rem 0 0;display:grid;grid-template-columns:auto 1fr;gap:.1rem 1.25rem}
+  dl.fields dt{font-family:var(--data);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding-top:.45rem}
+  dl.fields dd{margin:0;padding-top:.3rem;border-bottom:1px solid var(--paper-2);padding-bottom:.4rem}
+  dl.fields dd:last-child{border-bottom:0}
+  .tags{display:flex;flex-wrap:wrap;gap:.35rem}
+  .tag{font-family:var(--data);font-size:.7rem;background:var(--paper-2);padding:.15rem .45rem;border:0;cursor:pointer}
+  .tag:hover{background:var(--yellow)}
+
+  footer{background:var(--ink);color:#9FB2B0;padding:2.5rem 0;margin-top:2rem;font-size:.85rem;border-top:6px solid var(--yellow)}
+  footer a{color:var(--cloth)}
+  footer p{margin:.35rem 0;max-width:70ch}
+
+  @media (max-width:860px){
+    .browse{grid-template-columns:1fr}
+    .facets{position:static}
+    .sheet{grid-template-columns:1fr}
+    .sheet .obj{padding:1.5rem}
+    .sheet .obj svg{max-width:170px}
+  }
+  @media (max-width:700px){
+    .track2{height:auto;display:flex;flex-wrap:wrap;gap:.9rem}
+    .track2 .axis{display:none}
+    .pin{position:static;transform:none;width:46px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap bar">
+    <a class="mark" href="#" data-go="home">
+      <span id="markflag"></span>
+      <span>
+        <b>Marlow Harbor Storm Signals</b>
+        <span>Marlow Harbor Historical Society &middot; demo collection</span>
+      </span>
+    </a>
+    <nav id="nav" aria-label="Collection sections"></nav>
+  </div>
+</header>
+
+<section class="hero" id="hero">
+  <div class="wrap">
+    <div class="halyard" aria-hidden="true">
+      <div class="line"></div>
+      <div class="hoist" id="hoist"></div>
+    </div>
+    <p class="eyebrow">Marlow Harbor Historical Society &middot; 1889&ndash;1953</p>
+    <h1>Before the forecast, the harbor <em>read the flags</em></h1>
+    <p class="lede">For sixty-four years, anyone leaving Marlow Harbor checked four masts before they checked the sky. This collection gathers what survives of that service: the daybooks, the bunting, the instruments, and photographs of the men who hauled the halyards.</p>
+    <div class="stats" id="stats"></div>
+  </div>
+</section>
+
+<main class="wrap">
+
+  <section class="view" id="v-home">
+    <h2>Start here</h2>
+    <p class="sub">Three ways into the collection. Everything is also downloadable as a spreadsheet from the Data page.</p>
+    <ul class="grid" id="featured"></ul>
+  </section>
+
+  <section class="view" id="v-browse">
+    <h2>Browse the collection</h2>
+    <p class="sub">Search the full text of every record, or narrow by subject, format, station, and decade.</p>
+    <div class="browse">
+      <div class="facets">
+        <div class="search">
+          <label class="eyebrow" for="q">Search records</label>
+          <input id="q" type="search" placeholder="barometer, gale, Vance&hellip;" autocomplete="off">
+        </div>
+        <div id="facetlist"></div>
+      </div>
+      <div>
+        <div class="resultbar">
+          <span class="count" id="count"></span>
+          <button class="clear" id="clear" type="button">Clear all filters</button>
+        </div>
+        <ul class="grid" id="results"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="v-subjects">
+    <h2>Subjects</h2>
+    <p class="sub">Every subject term used in the collection, ranked by how many items carry it. Select one to browse those items.</p>
+    <ul class="bars" id="subjectbars"></ul>
+  </section>
+
+  <section class="view" id="v-timeline">
+    <h2>Timeline</h2>
+    <p class="sub">Items placed by year of creation across seven decades of service. Select a flag to open the record.</p>
+    <div id="timeline"></div>
+  </section>
+
+  <section class="view" id="v-stations">
+    <h2>Stations</h2>
+    <p class="sub">Six locations appear in the collection: four signal masts, a light station, and the reach where most of the wrecks happened. Select a station to browse its items.</p>
+    <div id="chart"></div>
+    <p class="eyebrow" style="margin-top:1rem">Positions are diagrammatic, not navigational. A live CollectionBuilder site plots these on a real basemap.</p>
+  </section>
+
+  <section class="view" id="v-data">
+    <h2>Data</h2>
+    <p class="sub">The collection is one spreadsheet. Change a cell, and every page above changes with it &mdash; that is the whole idea behind CollectionBuilder.</p>
+    <p><button class="btn" id="dl" type="button">Download metadata as CSV</button></p>
+    <div class="tablewrap"><table id="datatable"></table></div>
+  </section>
+
+  <section class="view" id="v-about">
+    <h2>About this demo</h2>
+    <div class="prose">
+      <p>This is a single self-contained HTML page that behaves like a small <a href="https://collectionbuilder.github.io/" target="_blank" rel="noopener">CollectionBuilder</a> site: one metadata table drives a browse grid, subject index, timeline, station diagram, and item records.</p>
+
+      <div class="note">
+        <p><strong>Everything here is invented.</strong> Marlow Harbor, the historical society, the signalmen, and all twenty records are fabricated for teaching purposes. Use them as placeholders, then replace them with your own metadata.</p>
+      </div>
+
+      <h3>Why flags instead of photographs</h3>
+      <p>A real CollectionBuilder site reads image files from an <code>objects</code> folder. This demo ships no image files, so each record displays a signal flag standing in for its digitized object, keyed to the letter in the record's accession sequence. The renderings are stylized versions of International Code of Signals flags.</p>
+
+      <h3>Putting it on GitHub Pages</h3>
+      <p>Save this file as <code>index.html</code> in a public repository, then open <em>Settings &rarr; Pages</em> and set the source to <em>Deploy from a branch</em>, branch <code>main</code>, folder <code>/(root)</code>. The site appears at <code>https://username.github.io/repository-name</code> within a few minutes.</p>
+
+      <h3>Building the real thing without GitHub Desktop</h3>
+      <p>You do not need Git installed. Open the <code>collectionbuilder-gh</code> repository on GitHub, click <strong>Use this template</strong>, and edit <code>_config.yml</code>, the metadata CSV, and the objects folder entirely in the browser. GitHub Desktop is a convenience, not a requirement.</p>
+
+      <h3>Editing this page</h3>
+      <p>All twenty records live in one JavaScript array near the bottom of the file, marked <code>const DATA</code>. The field names match CollectionBuilder's: <code>objectid</code>, <code>title</code>, <code>creator</code>, <code>date</code>, <code>description</code>, <code>subject</code>, <code>location</code>, <code>latitude</code>, <code>longitude</code>, <code>type</code>, <code>format</code>, <code>extent</code>, <code>rights</code>, <code>source</code>. Subjects are separated with semicolons.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong style="font-family:var(--display);text-transform:uppercase;font-size:1.15rem;color:var(--cloth)">Marlow Harbor Storm Signal Collection</strong></p>
+    <p>A demonstration collection built on invented data. Not affiliated with any real archive.</p>
+    <p>Structure and page types modeled on <a href="https://collectionbuilder.github.io/" target="_blank" rel="noopener">CollectionBuilder</a>, an open source project of the University of Idaho Library.</p>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="sheettitle">
+  <div class="sheet sheetpos" id="sheet"></div>
+</div>
+
+<script>
+const DATA = [
+ {
+  "objectid": "mhss_001",
+  "flag": "A",
+  "filename": "mhss_001.jpg",
+  "title": "Storm warning tower at Wrack Point, looking northeast",
+  "creator": "Alden, H. P.",
+  "date": "1889-10-12",
+  "description": "The newly raised signal mast at Wrack Point, photographed a week after the first display of the red storm pennant. Two observers stand at the base of the mast; halyard cleats are visible at chest height.",
+  "subject": "signal towers; storm warnings; Wrack Point",
+  "location": "Wrack Point, Marlow Harbor",
+  "latitude": "43.5312",
+  "longitude": "-70.2461",
+  "type": "Image",
+  "format": "image/jpeg",
+  "extent": "1 photographic print: albumen, 12 x 17 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Signal Service Papers, Box 1"
+ },
+ {
+  "objectid": "mhss_002",
+  "flag": "B",
+  "filename": "mhss_002.jpg",
+  "title": "Keeper Ellery Vance hoisting the small-craft pennant",
+  "creator": "Unidentified photographer",
+  "date": "1903-08-04",
+  "description": "Vance served as harbor signalman for thirty-one years. Here he raises the small-craft warning on a bright morning; the flag is caught mid-luff, still folded on itself.",
+  "subject": "signalmen; flags; small craft warnings",
+  "location": "Marlow Harbor Signal Station",
+  "latitude": "43.5288",
+  "longitude": "-70.2517",
+  "type": "Image",
+  "format": "image/jpeg",
+  "extent": "1 photographic print: gelatin silver, 10 x 13 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Vance Family Deposit"
+ },
+ {
+  "objectid": "mhss_003",
+  "flag": "C",
+  "filename": "mhss_003.pdf",
+  "title": "Signal station daybook, September 1911",
+  "creator": "Marlow Harbor Signal Station",
+  "date": "1911-09",
+  "description": "One month of the station daybook. Entries record barometric pressure at four-hour intervals, wind quarter, sea state, and every flag hoisted, with the time it went up and came down.",
+  "subject": "logbooks; barometric pressure; weather observation",
+  "location": "Marlow Harbor Signal Station",
+  "latitude": "43.5288",
+  "longitude": "-70.2517",
+  "type": "Text",
+  "format": "application/pdf",
+  "extent": "31 pages",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Signal Service Papers, Box 4"
+ },
+ {
+  "objectid": "mhss_004",
+  "flag": "D",
+  "filename": "mhss_004.jpg",
+  "title": "Kestrel Head Light and fog bell house after the November gale",
+  "creator": "Alden, H. P.",
+  "date": "1898-11-29",
+  "description": "Ice sheathes the seaward rail and the bell house roof has lost its shingles. The gale of 26-27 November drove four vessels ashore between Kestrel Head and Sable Reach.",
+  "subject": "lighthouses; storm damage; Kestrel Head; gales",
+  "location": "Kestrel Head Light",
+  "latitude": "43.5601",
+  "longitude": "-70.2183",
+  "type": "Image",
+  "format": "image/jpeg",
+  "extent": "1 photographic print: albumen, 13 x 18 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Signal Service Papers, Box 1"
+ },
+ {
+  "objectid": "mhss_005",
+  "flag": "E",
+  "filename": "mhss_005.jpg",
+  "title": "Bunting set: hurricane warning, two square flags",
+  "creator": "Unknown maker",
+  "date": "1924",
+  "description": "A pair of red flags with black centers, issued to the station and used until the 1953 closure. The hoist edges are patched with heavier canvas; salt bloom remains along both fly edges.",
+  "subject": "flags; hurricane warnings; textiles",
+  "location": "Marlow Harbor Signal Station",
+  "latitude": "43.5288",
+  "longitude": "-70.2517",
+  "type": "PhysicalObject",
+  "format": "image/jpeg",
+  "extent": "2 flags: wool bunting, each 91 x 91 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Object Collection 1971.14"
+ },
+ {
+  "objectid": "mhss_006",
+  "flag": "F",
+  "filename": "mhss_006.pdf",
+  "title": "Printed card of harbor signals, distributed to masters",
+  "creator": "Marlow Harbor Board of Trade",
+  "date": "1907",
+  "description": "A single sheet showing each flag and lantern combination with its meaning, printed for distribution to vessel masters and wharf agents. The reverse lists the hours the station was manned.",
+  "subject": "broadsides; harbor regulations; signal codes",
+  "location": "Marlow Harbor",
+  "latitude": "43.5273",
+  "longitude": "-70.2540",
+  "type": "Text",
+  "format": "application/pdf",
+  "extent": "1 sheet, printed both sides, 28 x 43 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Board of Trade Records"
+ },
+ {
+  "objectid": "mhss_007",
+  "flag": "G",
+  "filename": "mhss_007.jpg",
+  "title": "Fishing fleet at anchor under the small-craft warning",
+  "creator": "Unidentified photographer",
+  "date": "1931-04-17",
+  "description": "Nineteen boats crowded inside the breakwater rather than fish the outer grounds. The pennant is just visible on the mast at the left edge of the frame.",
+  "subject": "fishing boats; small craft warnings; harbors",
+  "location": "Little Marlow Wharf",
+  "latitude": "43.5241",
+  "longitude": "-70.2602",
+  "type": "Image",
+  "format": "image/jpeg",
+  "extent": "1 photographic print: gelatin silver, 13 x 18 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Waterfront Views Collection"
+ },
+ {
+  "objectid": "mhss_008",
+  "flag": "H",
+  "filename": "mhss_008.jpg",
+  "title": "Aneroid barometer, station instrument no. 2",
+  "creator": "Negus & Sons, New York",
+  "date": "1894",
+  "description": "The station's second barometer, mounted in a brass case with a set-hand for marking the previous reading. Calibration notes are pencilled inside the back plate.",
+  "subject": "barometers; scientific instruments; weather observation",
+  "location": "Marlow Harbor Signal Station",
+  "latitude": "43.5288",
+  "longitude": "-70.2517",
+  "type": "PhysicalObject",
+  "format": "image/jpeg",
+  "extent": "1 instrument: brass and glass, 16 cm diameter",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Object Collection 1968.02"
+ },
+ {
+  "objectid": "mhss_009",
+  "flag": "I",
+  "filename": "mhss_009.mp3",
+  "title": "Oral history interview with Ruth Vance Doyle",
+  "creator": "Marlow Harbor Historical Society",
+  "date": "1974-06-11",
+  "description": "Doyle, daughter of signalman Ellery Vance, describes growing up at the station: reading the glass for her father, the sound of the halyard against the mast at night, and the day the tower came down.",
+  "subject": "oral histories; signalmen; family life",
+  "location": "Marlow Harbor Signal Station",
+  "latitude": "43.5288",
+  "longitude": "-70.2517",
+  "type": "Sound",
+  "format": "audio/mpeg",
+  "extent": "1 audio file: 47 min",
+  "rights": "Used with permission of the interviewee's family.",
+  "source": "Marlow Harbor Historical Society, Oral History Program"
+ },
+ {
+  "objectid": "mhss_010",
+  "flag": "J",
+  "filename": "mhss_010.jpg",
+  "title": "Telegraph key and sounder used for warning dispatches",
+  "creator": "Unknown maker",
+  "date": "1902",
+  "description": "Warnings arrived by wire from the district office and were relayed to Kestrel Head and Sable Reach before any flag went up. The key's base is worn pale where the operator's wrist rested.",
+  "subject": "telegraphy; scientific instruments; storm warnings",
+  "location": "Marlow Harbor Signal Station",
+  "latitude": "43.5288",
+  "longitude": "-70.2517",
+  "type": "PhysicalObject",
+  "format": "image/jpeg",
+  "extent": "1 instrument: brass and walnut, 19 x 11 x 8 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Object Collection 1968.09"
+ },
+ {
+  "objectid": "mhss_011",
+  "flag": "K",
+  "filename": "mhss_011.jpg",
+  "title": "Schooner Ada M. Pike aground on Sable Reach",
+  "creator": "Alden, H. P.",
+  "date": "1900-03-08",
+  "description": "The Pike went on the reach in fog with the warning already flying. Her crew of six was taken off by the lifesaving station; the hull was broken up for salvage that spring.",
+  "subject": "shipwrecks; schooners; Sable Reach; fog",
+  "location": "Sable Reach",
+  "latitude": "43.5077",
+  "longitude": "-70.2064",
+  "type": "Image",
+  "format": "image/jpeg",
+  "extent": "1 photographic print: gelatin silver, 18 x 24 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Wreck Photographs"
+ },
+ {
+  "objectid": "mhss_012",
+  "flag": "L",
+  "filename": "mhss_012.pdf",
+  "title": "Monthly weather summary, station returns for 1922",
+  "creator": "Marlow Harbor Signal Station",
+  "date": "1922",
+  "description": "Twelve tabulated returns sent to the district office: mean pressure, extremes, days of fog, days with gale-force wind, and the count of each warning displayed.",
+  "subject": "statistics; weather observation; logbooks",
+  "location": "Marlow Harbor Signal Station",
+  "latitude": "43.5288",
+  "longitude": "-70.2517",
+  "type": "Text",
+  "format": "application/pdf",
+  "extent": "12 sheets",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Signal Service Papers, Box 6"
+ },
+ {
+  "objectid": "mhss_013",
+  "flag": "M",
+  "filename": "mhss_013.jpg",
+  "title": "Lantern hoist for night display, Coldharbor Station",
+  "creator": "Unidentified photographer",
+  "date": "1916-09-22",
+  "description": "After dark the flags gave way to lanterns: red above white for a coming northeast gale, white above red for southwest. The frame shows the hoist rigged and lit at dusk.",
+  "subject": "lanterns; night signals; Coldharbor; storm warnings",
+  "location": "Coldharbor Station",
+  "latitude": "43.5455",
+  "longitude": "-70.2789",
+  "type": "Image",
+  "format": "image/jpeg",
+  "extent": "1 photographic print: gelatin silver, 10 x 13 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Signal Service Papers, Box 2"
+ },
+ {
+  "objectid": "mhss_014",
+  "flag": "N",
+  "filename": "mhss_014.jpg",
+  "title": "Observers' quarters at Coldharbor, interior",
+  "creator": "Unidentified photographer",
+  "date": "1919-07",
+  "description": "A cot, a coal stove, the wall rack of folded bunting, and the duty roster tacked above the desk. Two men stood watch here in twelve-hour turns through the storm season.",
+  "subject": "interiors; signalmen; Coldharbor",
+  "location": "Coldharbor Station",
+  "latitude": "43.5455",
+  "longitude": "-70.2789",
+  "type": "Image",
+  "format": "image/jpeg",
+  "extent": "1 photographic print: gelatin silver, 13 x 18 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Signal Service Papers, Box 2"
+ },
+ {
+  "objectid": "mhss_015",
+  "flag": "P",
+  "filename": "mhss_015.jpg",
+  "title": "Chart of Marlow Harbor with signal sightlines marked in red",
+  "creator": "Vance, Ellery",
+  "date": "1908",
+  "description": "Vance's working chart, annotated to show which wharves and anchorages could see each mast. Three anchorages are circled and marked as blind from the harbor station.",
+  "subject": "maps and charts; harbors; sightlines",
+  "location": "Marlow Harbor",
+  "latitude": "43.5273",
+  "longitude": "-70.2540",
+  "type": "Image",
+  "format": "image/jpeg",
+  "extent": "1 chart: ink and pencil on printed chart, 56 x 74 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Vance Family Deposit"
+ },
+ {
+  "objectid": "mhss_016",
+  "flag": "Q",
+  "filename": "mhss_016.jpg",
+  "title": "Crowd on the fish pier watching the hurricane hoist",
+  "creator": "Unidentified photographer",
+  "date": "1938-09-20",
+  "description": "Two days before the storm reached the coast. Roughly forty people stand on the pier with the double red hoist above them; several are looking through the frame rather than up.",
+  "subject": "hurricane warnings; crowds; Little Marlow Wharf",
+  "location": "Little Marlow Wharf",
+  "latitude": "43.5241",
+  "longitude": "-70.2602",
+  "type": "Image",
+  "format": "image/jpeg",
+  "extent": "1 photographic print: gelatin silver, 13 x 18 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Waterfront Views Collection"
+ },
+ {
+  "objectid": "mhss_017",
+  "flag": "R",
+  "filename": "mhss_017.pdf",
+  "title": "Letter from the district office on the closing of Wrack Point",
+  "creator": "United States Weather Bureau, District Office",
+  "date": "1941-02-03",
+  "description": "Notice that the Wrack Point mast would no longer be maintained, with radio broadcast given as the reason. A pencilled reply in the margin asks what the outer anchorages are to do.",
+  "subject": "correspondence; Wrack Point; radio",
+  "location": "Wrack Point, Marlow Harbor",
+  "latitude": "43.5312",
+  "longitude": "-70.2461",
+  "type": "Text",
+  "format": "application/pdf",
+  "extent": "2 pages",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Signal Service Papers, Box 9"
+ },
+ {
+  "objectid": "mhss_018",
+  "flag": "S",
+  "filename": "mhss_018.jpg",
+  "title": "Radio receiver installed at the harbor station",
+  "creator": "Unidentified photographer",
+  "date": "1936-05",
+  "description": "The set that eventually made the masts redundant, on a shelf beside the barometer. For a decade the station ran both systems, wiring the broadcast forecast and then hoisting bunting to match.",
+  "subject": "radio; weather observation; scientific instruments",
+  "location": "Marlow Harbor Signal Station",
+  "latitude": "43.5288",
+  "longitude": "-70.2517",
+  "type": "Image",
+  "format": "image/jpeg",
+  "extent": "1 photographic print: gelatin silver, 10 x 13 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Signal Service Papers, Box 3"
+ },
+ {
+  "objectid": "mhss_019",
+  "flag": "T",
+  "filename": "mhss_019.jpg",
+  "title": "Wrack Point mast lowered, final day of service",
+  "creator": "Doyle, Ruth Vance",
+  "date": "1953-10-30",
+  "description": "The mast on the ground with the halyard still rove. Ruth Vance Doyle photographed the removal herself; her note on the reverse gives the time as twenty past eleven.",
+  "subject": "signal towers; Wrack Point; demolition",
+  "location": "Wrack Point, Marlow Harbor",
+  "latitude": "43.5312",
+  "longitude": "-70.2461",
+  "type": "Image",
+  "format": "image/jpeg",
+  "extent": "1 photographic print: gelatin silver, 9 x 9 cm",
+  "rights": "Used with permission of the photographer's family.",
+  "source": "Marlow Harbor Historical Society, Vance Family Deposit"
+ },
+ {
+  "objectid": "mhss_020",
+  "flag": "U",
+  "filename": "mhss_020.jpg",
+  "title": "Sable Reach day marker and the lifesaving crew's dory",
+  "creator": "Alden, H. P.",
+  "date": "1895-06-14",
+  "description": "The reach at low water, with the day marker standing clear of the ledge and a dory drawn up on the shingle. Six of the crew are named in ink on the mount.",
+  "subject": "lifesaving stations; Sable Reach; boats",
+  "location": "Sable Reach",
+  "latitude": "43.5077",
+  "longitude": "-70.2064",
+  "type": "Image",
+  "format": "image/jpeg",
+  "extent": "1 photographic print: albumen, 12 x 17 cm",
+  "rights": "No known copyright restrictions.",
+  "source": "Marlow Harbor Historical Society, Wreck Photographs"
+ }
+];
+
+/* ---------- signal flags: stylized ICS renderings ---------- */
+const C = {r:"#C0271B", y:"#E5AF23", b:"#1C4C86", w:"#F2F1EC", k:"#151515"};
+const SWALLOW = "M0 0 H60 L47 20 L60 40 H0 Z";
+const FLAGS = {
+  A: `<clipPath id="sw"><path d="${SWALLOW}"/></clipPath><g clip-path="url(#sw)"><rect width="30" height="40" fill="${C.w}"/><rect x="30" width="30" height="40" fill="${C.b}"/></g>`,
+  B: `<path d="${SWALLOW}" fill="${C.r}"/>`,
+  C: `<rect width="60" height="40" fill="${C.w}"/><rect width="60" height="8" fill="${C.b}"/><rect y="16" width="60" height="8" fill="${C.r}"/><rect y="32" width="60" height="8" fill="${C.b}"/>`,
+  D: `<rect width="60" height="40" fill="${C.y}"/><rect y="11" width="60" height="18" fill="${C.b}"/>`,
+  E: `<rect width="60" height="20" fill="${C.b}"/><rect y="20" width="60" height="20" fill="${C.r}"/>`,
+  F: `<rect width="60" height="40" fill="${C.w}"/><polygon points="30,4 55,20 30,36 5,20" fill="${C.r}"/>`,
+  G: `<rect width="60" height="40" fill="${C.y}"/><rect x="10" width="10" height="40" fill="${C.b}"/><rect x="30" width="10" height="40" fill="${C.b}"/><rect x="50" width="10" height="40" fill="${C.b}"/>`,
+  H: `<rect width="30" height="40" fill="${C.w}"/><rect x="30" width="30" height="40" fill="${C.r}"/>`,
+  I: `<rect width="60" height="40" fill="${C.y}"/><circle cx="30" cy="20" r="11" fill="${C.k}"/>`,
+  J: `<rect width="60" height="40" fill="${C.b}"/><rect y="13" width="60" height="14" fill="${C.w}"/>`,
+  K: `<rect width="30" height="40" fill="${C.y}"/><rect x="30" width="30" height="40" fill="${C.b}"/>`,
+  L: `<rect width="60" height="40" fill="${C.y}"/><rect x="30" width="30" height="20" fill="${C.k}"/><rect y="20" width="30" height="20" fill="${C.k}"/>`,
+  M: `<rect width="60" height="40" fill="${C.b}"/><path d="M0 0 L60 40 M60 0 L0 40" stroke="${C.w}" stroke-width="8"/>`,
+  N: `<rect width="60" height="40" fill="${C.w}"/><g fill="${C.b}"><rect width="15" height="10"/><rect x="30" width="15" height="10"/><rect x="15" y="10" width="15" height="10"/><rect x="45" y="10" width="15" height="10"/><rect y="20" width="15" height="10"/><rect x="30" y="20" width="15" height="10"/><rect x="15" y="30" width="15" height="10"/><rect x="45" y="30" width="15" height="10"/></g>`,
+  O: `<polygon points="0,0 60,0 0,40" fill="${C.r}"/><polygon points="60,0 60,40 0,40" fill="${C.y}"/>`,
+  P: `<rect width="60" height="40" fill="${C.b}"/><rect x="19" y="12" width="22" height="16" fill="${C.w}"/>`,
+  Q: `<rect width="60" height="40" fill="${C.y}"/>`,
+  R: `<rect width="60" height="40" fill="${C.r}"/><rect x="26" width="8" height="40" fill="${C.y}"/><rect y="16" width="60" height="8" fill="${C.y}"/>`,
+  S: `<rect width="60" height="40" fill="${C.w}"/><rect x="19" y="12" width="22" height="16" fill="${C.b}"/>`,
+  T: `<rect width="20" height="40" fill="${C.r}"/><rect x="20" width="20" height="40" fill="${C.w}"/><rect x="40" width="20" height="40" fill="${C.b}"/>`,
+  U: `<rect width="60" height="40" fill="${C.r}"/><rect x="30" width="30" height="20" fill="${C.w}"/><rect y="20" width="30" height="20" fill="${C.w}"/>`,
+  V: `<rect width="60" height="40" fill="${C.w}"/><path d="M0 0 L60 40 M60 0 L0 40" stroke="${C.r}" stroke-width="8"/>`,
+  W: `<rect width="60" height="40" fill="${C.b}"/><rect x="10" y="6" width="40" height="28" fill="${C.w}"/><rect x="20" y="14" width="20" height="12" fill="${C.r}"/>`,
+  X: `<rect width="60" height="40" fill="${C.w}"/><rect x="26" width="8" height="40" fill="${C.b}"/><rect y="16" width="60" height="8" fill="${C.b}"/>`
+};
+let uid = 0;
+function flag(letter, w){
+  const body = (FLAGS[letter] || FLAGS.Q).replace(/id="sw"/g, 'id="sw'+(++uid)+'"').replace(/url\(#sw\)/g, 'url(#sw'+uid+')');
+  return `<svg viewBox="0 0 60 40" width="${w||60}" role="img" aria-label="Signal flag ${letter}"><rect width="60" height="40" fill="#0F1E26" opacity=".08"/>${body}</svg>`;
+}
+
+/* ---------- derived helpers ---------- */
+const subjectsOf = it => it.subject.split(";").map(s => s.trim()).filter(Boolean);
+const yearOf = it => parseInt(it.date.slice(0,4), 10);
+const decadeOf = it => Math.floor(yearOf(it)/10)*10;
+const TYPE_LABEL = {Image:"Photographs & charts", Text:"Documents", PhysicalObject:"Objects", Sound:"Audio"};
+const typeLabel = t => TYPE_LABEL[t] || t;
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+function tally(fn){
+  const m = new Map();
+  DATA.forEach(it => [].concat(fn(it)).forEach(v => m.set(v, (m.get(v)||0)+1)));
+  return [...m.entries()].sort((a,b) => b[1]-a[1] || String(a[0]).localeCompare(String(b[0])));
+}
+
+/* ---------- state ---------- */
+const state = {view:"home", q:"", subject:new Set(), type:new Set(), location:new Set(), decade:new Set()};
+
+const VIEWS = [
+  ["home","Home"], ["browse","Browse"], ["subjects","Subjects"],
+  ["timeline","Timeline"], ["stations","Stations"], ["data","Data"], ["about","About"]
+];
+
+function go(view){
+  state.view = view;
+  VIEWS.forEach(([id]) => document.getElementById("v-"+id).classList.toggle("on", id===view));
+  document.querySelectorAll("#nav button").forEach(b =>
+    b.setAttribute("aria-current", b.dataset.view===view ? "page" : "false"));
+  document.getElementById("hero").style.display = view==="home" ? "" : "none";
+  window.scrollTo({top:0, behavior:"instant"});
+}
+
+function matches(it){
+  const q = state.q.trim().toLowerCase();
+  if(q){
+    const hay = [it.title,it.creator,it.description,it.subject,it.location,it.date,it.source,it.extent].join(" ").toLowerCase();
+    if(!q.split(/\s+/).every(t => hay.includes(t))) return false;
+  }
+  if(state.subject.size && !subjectsOf(it).some(s => state.subject.has(s))) return false;
+  if(state.type.size && !state.type.has(it.type)) return false;
+  if(state.location.size && !state.location.has(it.location)) return false;
+  if(state.decade.size && !state.decade.has(decadeOf(it))) return false;
+  return true;
+}
+
+/* ---------- rendering ---------- */
+function cardHTML(it){
+  return `<li><button class="card" type="button" data-id="${it.objectid}">
+    <span class="thumb">${flag(it.flag,120)}<span class="id">${esc(it.objectid)}</span></span>
+    <h3>${esc(it.title)}</h3>
+    <span class="meta">${esc(it.date)} &nbsp;&middot;&nbsp; ${esc(typeLabel(it.type))}</span>
+  </button></li>`;
+}
+
+function drawResults(){
+  const hits = DATA.filter(matches);
+  const el = document.getElementById("results");
+  el.innerHTML = hits.length
+    ? hits.map(cardHTML).join("")
+    : `<li class="empty" style="grid-column:1/-1">No records match those filters. Clear one to widen the search.</li>`;
+  const active = state.subject.size + state.type.size + state.location.size + state.decade.size + (state.q.trim()?1:0);
+  document.getElementById("count").textContent =
+    `${hits.length} of ${DATA.length} records` + (active ? ` · ${active} filter${active>1?"s":""} on` : "");
+  document.getElementById("clear").style.visibility = active ? "visible" : "hidden";
+  drawFacets();
+}
+
+function facetGroup(title, key, entries, labeller){
+  return `<h3>${title}</h3>` + entries.map(([v,n]) => {
+    const on = state[key].has(v);
+    return `<button class="facet" type="button" aria-pressed="${on}" data-key="${key}" data-val="${esc(v)}">
+      <span class="k">${esc(labeller ? labeller(v) : v)}</span><span class="n">${n}</span></button>`;
+  }).join("");
+}
+
+function drawFacets(){
+  document.getElementById("facetlist").innerHTML =
+    facetGroup("Subject", "subject", tally(subjectsOf).slice(0,14)) +
+    facetGroup("Format", "type", tally(it => it.type), typeLabel) +
+    facetGroup("Station", "location", tally(it => it.location)) +
+    facetGroup("Decade", "decade", tally(decadeOf).sort((a,b)=>a[0]-b[0]), d => d+"s");
+}
+
+function drawSubjects(){
+  const rows = tally(subjectsOf);
+  const max = rows[0][1];
+  document.getElementById("subjectbars").innerHTML = rows.map(([s,n]) =>
+    `<li><button type="button" data-subject="${esc(s)}">
+      <span class="lab">${esc(s)}</span>
+      <span class="track"><span class="fill" style="width:${Math.round(n/max*100)}%"></span></span>
+     </button><span class="n">${n}</span></li>`).join("");
+}
+
+function drawTimeline(){
+  const decades = [...new Set(DATA.map(decadeOf))].sort((a,b)=>a-b);
+  document.getElementById("timeline").innerHTML = decades.map(d => {
+    const items = DATA.filter(it => decadeOf(it)===d).sort((a,b)=>yearOf(a)-yearOf(b));
+    const pins = items.map((it,i) => {
+      const pct = 4 + ((yearOf(it)-d)/10)*92 + (i%2 ? 1.5 : -1.5);
+      return `<button class="pin" type="button" data-id="${it.objectid}" style="left:${pct}%;top:${i%2?18:0}px" title="${esc(it.title)}">
+        ${flag(it.flag,38)}<span class="y">${esc(it.date.slice(0,4))}</span></button>`;
+    }).join("");
+    return `<div class="decade"><div class="dl">${d}s<small>${items.length} record${items.length>1?"s":""}</small></div>
+      <div class="track2"><div class="axis"></div>${pins}</div></div>`;
+  }).join("");
+}
+
+const SOUNDINGS = [[120,90,"7"],[300,60,"11"],[520,110,"14"],[760,80,"9"],[900,150,"17"],[180,260,"5"],[430,300,"8"],[640,240,"12"],[860,330,"21"],[240,430,"4"],[520,470,"6"],[780,500,"15"],[120,540,"3"],[400,570,"9"],[930,560,"24"],[660,400,"18"]];
+
+function drawChart(){
+  const W = 1000, H = 620, pad = 90;
+  const lats = DATA.map(d => +d.latitude), lngs = DATA.map(d => +d.longitude);
+  const [la0,la1,lo0,lo1] = [Math.min(...lats), Math.max(...lats), Math.min(...lngs), Math.max(...lngs)];
+  const X = lo => pad + (lo-lo0)/(lo1-lo0) * (W-2*pad);
+  const Y = la => H-pad - (la-la0)/(la1-la0) * (H-2*pad);
+
+  const grid = [];
+  for(let i=0;i<=4;i++){
+    const x = pad + i*(W-2*pad)/4, y = pad + i*(H-2*pad)/4;
+    grid.push(`<line class="grid-l" x1="${x}" y1="${pad-30}" x2="${x}" y2="${H-pad+30}"/>`);
+    grid.push(`<line class="grid-l" x1="${pad-30}" y1="${y}" x2="${W-pad+30}" y2="${y}"/>`);
+    grid.push(`<text class="tick" x="${x}" y="${pad-40}" text-anchor="middle">${(lo0+(lo1-lo0)*i/4).toFixed(3)}</text>`);
+    grid.push(`<text class="tick" x="${pad-40}" y="${y+3}" text-anchor="end">${(la1-(la1-la0)*i/4).toFixed(3)}</text>`);
+  }
+
+  const stations = tally(it => it.location).map(([name,n]) => {
+    const it = DATA.find(d => d.location===name);
+    const x = X(+it.longitude), y = Y(+it.latitude), r = 7 + n*1.9;
+    const right = x < W/2;
+    return `<g class="station" data-location="${esc(name)}" tabindex="0" role="button" aria-label="${esc(name)}, ${n} records">
+      <circle cx="${x}" cy="${y}" r="${r}"/>
+      <text x="${right ? x+r+9 : x-r-9}" y="${y+5}" text-anchor="${right?"start":"end"}">${esc(name)}</text>
+      <text x="${right ? x+r+9 : x-r-9}" y="${y+21}" text-anchor="${right?"start":"end"}" class="sounding" style="font-size:11px">${n} records</text>
+    </g>`;
+  }).join("");
+
+  document.getElementById("chart").innerHTML =
+    `<svg class="chart" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Diagram of station positions">
+      ${grid.join("")}
+      ${SOUNDINGS.map(([x,y,v]) => `<text class="sounding" x="${x}" y="${y}">${v}</text>`).join("")}
+      <text class="tick" x="${W-pad+30}" y="${H-28}" text-anchor="end">SOUNDINGS IN FATHOMS AT MEAN LOW WATER · DIAGRAMMATIC</text>
+      ${stations}
+    </svg>`;
+}
+
+const COLS = ["objectid","title","creator","date","subject","location","latitude","longitude","type","format","extent","rights","source"];
+
+function drawTable(){
+  document.getElementById("datatable").innerHTML =
+    `<thead><tr>${COLS.map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>` +
+    DATA.map(it => `<tr>${COLS.map(c =>
+      `<td${c==="title"?' class="t"':""}>${esc(it[c])}</td>`).join("")}</tr>`).join("") +
+    `</tbody>`;
+}
+
+function drawStats(){
+  const years = DATA.map(yearOf);
+  const cells = [
+    [DATA.length, "records"],
+    [tally(subjectsOf).length, "subject terms"],
+    [tally(it => it.location).length, "stations"],
+    [Math.min(...years)+"–"+Math.max(...years), "years covered"]
+  ];
+  document.getElementById("stats").innerHTML =
+    cells.map(([b,s]) => `<div><b>${b}</b><span>${s}</span></div>`).join("");
+}
+
+/* ---------- item sheet ---------- */
+let lastFocus = null;
+function openItem(id){
+  const it = DATA.find(d => d.objectid===id);
+  if(!it) return;
+  lastFocus = document.activeElement;
+  const rows = [
+    ["Title", esc(it.title)],
+    ["Creator", esc(it.creator)],
+    ["Date", esc(it.date)],
+    ["Description", esc(it.description)],
+    ["Subjects", `<span class="tags">${subjectsOf(it).map(s =>
+      `<button class="tag" type="button" data-subject="${esc(s)}">${esc(s)}</button>`).join("")}</span>`],
+    ["Station", `<button class="tag" type="button" data-location="${esc(it.location)}">${esc(it.location)}</button>`],
+    ["Coordinates", `${esc(it.latitude)}, ${esc(it.longitude)}`],
+    ["Type", esc(it.type)],
+    ["Format", esc(it.format)],
+    ["Extent", esc(it.extent)],
+    ["Rights", esc(it.rights)],
+    ["Source", esc(it.source)],
+    ["Identifier", esc(it.objectid)]
+  ];
+  document.getElementById("sheet").innerHTML = `
+    <button class="close" type="button" id="closebtn" aria-label="Close record">&times;</button>
+    <div class="obj">
+      <div>${flag(it.flag,250)}
+      <p class="cap">Placeholder for<br>${esc(it.filename)}<br>Signal flag ${esc(it.flag)}</p></div>
+    </div>
+    <div class="body">
+      <p class="eyebrow">Record ${esc(it.objectid)}</p>
+      <h2 id="sheettitle">${esc(it.title)}</h2>
+      <dl class="fields">${rows.map(([k,v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
+    </div>`;
+  document.getElementById("scrim").classList.add("on");
+  document.body.style.overflow = "hidden";
+  document.getElementById("closebtn").focus();
+}
+function closeItem(){
+  document.getElementById("scrim").classList.remove("on");
+  document.body.style.overflow = "";
+  if(lastFocus) lastFocus.focus();
+}
+
+/* ---------- csv ---------- */
+function csv(){
+  const q = v => /[",\n]/.test(v) ? '"'+String(v).replace(/"/g,'""')+'"' : v;
+  const head = ["objectid","filename"].concat(COLS.slice(1));
+  return head.join(",") + "\n" + DATA.map(it => head.map(c => q(it[c] ?? "")).join(",")).join("\n") + "\n";
+}
+
+/* ---------- wiring ---------- */
+document.getElementById("nav").innerHTML = VIEWS.map(([id,label]) =>
+  `<button type="button" data-view="${id}">${label}</button>`).join("");
+document.getElementById("markflag").innerHTML = flag("R",38);
+document.getElementById("hoist").innerHTML = "MARLOW".split("").map((l,i) =>
+  `<span class="fl" style="animation-delay:${120+i*95}ms">${flag(l, 74)}</span>`).join("");
+
+drawStats(); drawFacets(); drawResults(); drawSubjects(); drawTimeline(); drawChart(); drawTable();
+document.getElementById("featured").innerHTML =
+  ["mhss_001","mhss_003","mhss_009","mhss_016"].map(id => cardHTML(DATA.find(d=>d.objectid===id))).join("");
+
+document.addEventListener("click", e => {
+  const t = e.target;
+
+  const navb = t.closest("#nav button");
+  if(navb){ go(navb.dataset.view); return; }
+
+  const mark = t.closest("[data-go]");
+  if(mark){ e.preventDefault(); go(mark.dataset.go); return; }
+
+  const card = t.closest(".card, .pin");
+  if(card){ openItem(card.dataset.id); return; }
+
+  const facet = t.closest(".facet");
+  if(facet){
+    const {key, val} = facet.dataset;
+    const v = key==="decade" ? +val : val;
+    state[key].has(v) ? state[key].delete(v) : state[key].add(v);
+    drawResults();
+    const again = document.querySelector(`.facet[data-key="${key}"][data-val="${CSS.escape(val)}"]`);
+    if(again) again.focus();
+    return;
+  }
+
+  const subj = t.closest("[data-subject]");
+  if(subj){
+    closeItem();
+    Object.assign(state, {q:"", subject:new Set([subj.dataset.subject]), type:new Set(), location:new Set(), decade:new Set()});
+    document.getElementById("q").value = "";
+    drawResults(); go("browse"); return;
+  }
+
+  const loc = t.closest("[data-location]");
+  if(loc){
+    closeItem();
+    Object.assign(state, {q:"", subject:new Set(), type:new Set(), location:new Set([loc.dataset.location]), decade:new Set()});
+    document.getElementById("q").value = "";
+    drawResults(); go("browse"); return;
+  }
+
+  if(t.id==="clear"){
+    Object.assign(state, {q:"", subject:new Set(), type:new Set(), location:new Set(), decade:new Set()});
+    document.getElementById("q").value = "";
+    drawResults(); return;
+  }
+
+  if(t.id==="closebtn" || t.id==="scrim"){ closeItem(); return; }
+
+  if(t.id==="dl"){
+    const url = URL.createObjectURL(new Blob([csv()], {type:"text/csv;charset=utf-8"}));
+    const a = document.createElement("a");
+    a.href = url; a.download = "marlow-harbor-metadata.csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
+});
+
+document.getElementById("q").addEventListener("input", e => { state.q = e.target.value; drawResults(); });
+
+document.addEventListener("keydown", e => {
+  if(e.key==="Escape") closeItem();
+  if(e.key==="Enter" && e.target.classList && e.target.classList.contains("station")) e.target.click();
+});
+
+go("home");
+</script>
+</body>
+</html>
