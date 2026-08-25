@@ -1,9 +1,231 @@
-<html>
-  <head></head>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LETS CAMP 2026</title>
+    <style>
+      :root {
+        --bg-dark: #0f172a;
+        --bg-mid: #1e293b;
+        --panel: rgba(15, 23, 42, 0.72);
+        --text: #f8fafc;
+        --muted: #cbd5e1;
+        --accent: #f59e0b;
+        --accent-2: #22c55e;
+        --accent-3: #38bdf8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Arial, Helvetica, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top, rgba(56, 189, 248, 0.2), transparent 30%),
+          radial-gradient(circle at 20% 80%, rgba(34, 197, 94, 0.18), transparent 25%),
+          radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.18), transparent 25%),
+          linear-gradient(180deg, #0b1120 0%, #0f172a 55%, #172554 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        overflow: hidden;
+      }
+
+      .scene {
+        position: relative;
+        width: 100%;
+        max-width: 980px;
+      }
+
+      .stars::before,
+      .stars::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,0.8), transparent 50%),
+          radial-gradient(2px 2px at 25% 15%, rgba(255,255,255,0.7), transparent 50%),
+          radial-gradient(2px 2px at 70% 18%, rgba(255,255,255,0.9), transparent 50%),
+          radial-gradient(2px 2px at 85% 30%, rgba(255,255,255,0.75), transparent 50%),
+          radial-gradient(2px 2px at 60% 10%, rgba(255,255,255,0.7), transparent 50%);
+        pointer-events: none;
+      }
+
+      .card {
+        position: relative;
+        z-index: 2;
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 28px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+        padding: 48px 36px;
+        text-align: center;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(245, 158, 11, 0.15);
+        border: 1px solid rgba(245, 158, 11, 0.35);
+        color: #fde68a;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2.4rem, 6vw, 4.5rem);
+        line-height: 1;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      }
+
+      .highlight {
+        display: block;
+        color: var(--accent);
+      }
+
+      .subtitle {
+        max-width: 680px;
+        margin: 18px auto 0;
+        font-size: 1.1rem;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+
+      .actions {
+        margin-top: 32px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: center;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-width: 240px;
+        padding: 16px 24px;
+        border-radius: 16px;
+        text-decoration: none;
+        font-weight: 800;
+        font-size: 1rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent), #fb923c);
+        color: #111827;
+        box-shadow: 0 12px 30px rgba(245, 158, 11, 0.28);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .footer-note {
+        margin-top: 22px;
+        font-size: 0.95rem;
+        color: #cbd5e1;
+      }
+
+      .camp-icons {
+        margin-top: 26px;
+        font-size: 2rem;
+        letter-spacing: 0.25em;
+        opacity: 0.95;
+      }
+
+      .ground {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: -30px;
+        width: 88%;
+        height: 120px;
+        background: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.28), rgba(34, 197, 94, 0.04) 65%, transparent 75%);
+        filter: blur(8px);
+        z-index: 1;
+      }
+
+      @media (max-width: 640px) {
+        .card {
+          padding: 36px 22px;
+        }
+
+        .btn {
+          width: 100%;
+          min-width: unset;
+        }
+
+        .camp-icons {
+          font-size: 1.7rem;
+          letter-spacing: 0.18em;
+        }
+      }
+    </style>
+  </head>
   <body>
-    <h1>LETS CAMP 2026</h1>
-    <p>
-      Here is the link to our notebook: <a href="https://colab.research.google.com/drive/1EYE1vqtuFjUiMr9TiG4_fioHOETjWgJ5?usp=drive_link">LINK</a>
-    </p>
+    <div class="scene stars">
+      <div class="card">
+        <div class="badge">Camp-Themed Tech Training</div>
+
+        <h1>
+          LETS CAMP
+          <span class="highlight">2026</span>
+        </h1>
+
+        <p class="subtitle">
+          Welcome to our camp-themed tech session. Grab the training notebook below and get ready to build, explore, and learn around the digital campfire.
+        </p>
+
+        <div class="actions">
+          <a
+            class="btn btn-primary"
+            href="https://colab.research.google.com/drive/1EYE1vqtuFjUiMr9TiG4_fioHOETjWgJ5?usp=drive_link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ⬇ Open Training Notebook
+          </a>
+
+          <a
+            class="btn btn-secondary"
+            href="https://colab.research.google.com/drive/1EYE1vqtuFjUiMr9TiG4_fioHOETjWgJ5?usp=drive_link"
+            download
+          >
+            🔗 Direct Access Link
+          </a>
+        </div>
+
+        <div class="footer-note">
+          If the button does not open automatically, copy the link above into your browser.
+        </div>
+
+        <div class="camp-icons">🏕️ 💻 🔥 🌲</div>
+      </div>
+
+      <div class="ground"></div>
+    </div>
   </body>
 </html>
