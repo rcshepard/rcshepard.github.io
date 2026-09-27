@@ -1,0 +1,14 @@
+{
+  "name": "psicits",
+  "version": "0.1.0",
+  "description": "PSICITS (Professor Shepard, I Couldn't Install The Software): a GIS that runs entirely in the browser, driven by plain-text commands. No install, no server, no API keys.",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test",
+    "serve": "node tools/serve.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
