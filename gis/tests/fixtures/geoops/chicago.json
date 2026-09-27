@@ -1,0 +1,92 @@
+{
+  "_comment": "Hand-built, simplified shapes around downtown Chicago (EPSG:4326) for tests/geoops.test.js. Not real boundaries.",
+  "areas": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "a1",
+        "properties": { "name": "Loop", "pop": 42000, "zone": "C" },
+        "geometry": { "type": "Polygon", "coordinates": [[[-87.64, 41.875], [-87.62, 41.875], [-87.62, 41.89], [-87.64, 41.89], [-87.64, 41.875]]] }
+      },
+      {
+        "type": "Feature",
+        "id": "a2",
+        "properties": { "name": "Near North", "pop": 80000, "zone": "C" },
+        "geometry": { "type": "Polygon", "coordinates": [[[-87.64, 41.89], [-87.62, 41.89], [-87.62, 41.91], [-87.64, 41.91], [-87.64, 41.89]]] }
+      },
+      {
+        "type": "Feature",
+        "id": "a3",
+        "properties": { "name": "Museum Campus", "pop": 0, "zone": "P" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [[-87.62, 41.86], [-87.6, 41.86], [-87.6, 41.88], [-87.62, 41.88], [-87.62, 41.86]],
+            [[-87.615, 41.865], [-87.615, 41.875], [-87.605, 41.875], [-87.605, 41.865], [-87.615, 41.865]]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "a4",
+        "properties": { "name": "Islands", "pop": 10, "zone": "P" },
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [[[-87.6, 41.89], [-87.595, 41.89], [-87.595, 41.895], [-87.6, 41.895], [-87.6, 41.89]]],
+            [[[-87.59, 41.89], [-87.585, 41.89], [-87.585, 41.895], [-87.59, 41.895], [-87.59, 41.89]]]
+          ]
+        }
+      }
+    ]
+  },
+  "roads": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "r1",
+        "properties": { "name": "Lake St", "lanes": 4 },
+        "geometry": { "type": "LineString", "coordinates": [[-87.66, 41.885], [-87.58, 41.885]] }
+      },
+      {
+        "type": "Feature",
+        "id": "r2",
+        "properties": { "name": "State St", "lanes": 4 },
+        "geometry": { "type": "LineString", "coordinates": [[-87.628, 41.86], [-87.628, 41.92]] }
+      },
+      {
+        "type": "Feature",
+        "id": "r3",
+        "properties": { "name": "Lakefront Trail", "lanes": 1 },
+        "geometry": {
+          "type": "MultiLineString",
+          "coordinates": [
+            [[-87.625, 41.87], [-87.595, 41.87]],
+            [[-87.59, 41.85], [-87.59, 41.87]]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "r4",
+        "properties": { "name": "Roosevelt Rd", "lanes": 6 },
+        "geometry": { "type": "LineString", "coordinates": [[-87.64, 41.875], [-87.62, 41.875]] }
+      }
+    ]
+  },
+  "places": {
+    "type": "FeatureCollection",
+    "features": [
+      { "type": "Feature", "id": "p1", "properties": { "name": "Willis Tower", "visitors": 1700000 }, "geometry": { "type": "Point", "coordinates": [-87.6359, 41.8789] } },
+      { "type": "Feature", "id": "p2", "properties": { "name": "Water Tower", "visitors": 300000 }, "geometry": { "type": "Point", "coordinates": [-87.6244, 41.8972] } },
+      { "type": "Feature", "id": "p3", "properties": { "name": "Field Museum", "visitors": 1300000 }, "geometry": { "type": "Point", "coordinates": [-87.617, 41.8663] } },
+      { "type": "Feature", "id": "p4", "properties": { "name": "Pond", "visitors": 0 }, "geometry": { "type": "Point", "coordinates": [-87.61, 41.87] } },
+      { "type": "Feature", "id": "p5", "properties": { "name": "Navy Pier", "visitors": 9000000 }, "geometry": { "type": "Point", "coordinates": [-87.6051, 41.8917] } },
+      { "type": "Feature", "id": "p6", "properties": { "name": "Boundary Marker", "visitors": 5 }, "geometry": { "type": "Point", "coordinates": [-87.63, 41.89] } },
+      { "type": "Feature", "id": "p7", "properties": { "name": "Island Beacon", "visitors": 50 }, "geometry": { "type": "Point", "coordinates": [-87.5875, 41.8925] } },
+      { "type": "Feature", "id": "p8", "properties": { "name": "Unknown", "visitors": null }, "geometry": null }
+    ]
+  }
+}
