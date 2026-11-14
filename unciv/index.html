@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hinterlands (prototype)</title>
+<title>Hearthlands (prototype)</title>
 <style>
   :root {
     --bg: #d6dadd;
@@ -175,7 +175,7 @@
 <body>
 <div id="app">
   <header class="bar">
-    <h1>Hinterlands</h1>
+    <h1>Hearthlands</h1>
     <dl class="stats">
       <div><dt>Turn</dt><dd id="sTurn">1</dd></div>
       <div><dt>Treasury</dt><dd><span id="sGold">0</span> gold <small id="sIncome"></small></dd></div>
@@ -213,7 +213,7 @@
 </div>
 
 <dialog id="dlgRules">
-  <h2>How Hinterlands works</h2>
+  <h2>How Hearthlands works</h2>
   <p>You start with one settler and one warrior, at peace with a rival realm across the map. Wipe out every rival unit and city to win.</p>
   <h3>Peace and war</h3>
   <ul>
@@ -230,6 +230,7 @@
     <li>Each unit gets one move per turn in any of the eight directions. Water is fine. Entering mountains ends the move and costs the next turn too, unless a road runs over them.</li>
     <li>Moving between two road, railroad, city or district squares costs half a move: the streets between neighboring urban squares work like roads.</li>
     <li>Moving between two of your own railroad squares, or between a railroad square and your city center, costs nothing. A big city laced with railroads can move units across it in a single turn.</li>
+    <li>A square can hold at most 5 of one realm's units.</li>
     <li>Moving into an enemy unit starts a fight: d6 plus attack against d6 plus defense. Higher total wins and the loser is destroyed. Ties go to the defender.</li>
     <li>A fight decided by 1 point or less hurts both sides instead: the winner drops to 75% strength and the loser to 25%. A loser already at 25% or less is destroyed. The red tag on a unit shows its remaining strength.</li>
     <li>Units defending inside a city or district add that square's population plus their neighbors'. An undefended city or district fights back with the same bonus.</li>
@@ -238,6 +239,8 @@
     <li>Settlers defend with 1 plus their roll and nothing else, and a tie counts against them.</li>
     <li>Ships stay on water. They fight like warriors, but at five times strength against land units on water.</li>
     <li>Once your realm reaches 100 people in all, cities train infantry (10 attack, 10 defense) instead of warriors, archers and spearmen, and those can be upgraded to infantry for 100 gold each. At 150 people cities can also build tanks (30 attack, 20 defense), which can't be made by upgrading.</li>
+    <li>A city is under siege while enemy military units hold 5 or more of the 8 squares around it. Each turn of siege strips a tenth of its defense bonus; after 10 turns only the units inside can defend it, still with their fortifications and the 20% home-ground edge, and an empty city falls without a fight. Once the siege breaks, the city recovers a tenth a turn.</li>
+    <li>A military unit with enemy military units on every square around it loses 25% strength a turn, whatever its strength, and is wiped out within 4 turns unless it fights its way out or the ring breaks.</li>
     <li>Damaged units fight weaker, in step with their health. A damaged unit heals completely after 2 turns inside its own territory without moving, attacking or being attacked. Fortifying counts as keeping still.</li>
   </ul>
   <h3>Capturing and occupying</h3>
@@ -249,7 +252,7 @@
   <h3>Settlers and land</h3>
   <ul>
     <li>Settlers never get used up. They work for a number of turns: city 5 (a realm's first city only 1), district 5, harbor 5, mine 5, farm 3, road 2, or 8 for a road over mountains. Moving them cancels the work.</li>
-    <li>City centers must be at least 5 squares apart, and a new city can't touch another urban square. Building next to your own urban square makes a district instead, which belongs to the nearest of your cities. Districts go inside your own borders.</li>
+    <li>City centers must be at least 5 squares apart, and a new city can't touch another urban square. Building next to your own urban square, corners included, makes a district instead, which belongs to the nearest of your cities. Districts go inside your own borders.</li>
     <li>Each city claims 3 squares in every direction for free. You can buy squares touching its border, out to 5 squares, for 50 gold each. Rivals can't put farms, districts, mines or harbors inside your borders.</li>
     <li>A road built through a district is a railroad. Past 5 squares, and out to 8, a city can only buy squares next to its railroads, and districts there must sit on a road or next to a railroad.</li>
     <li>Harbors go on a water square directly beside one of your land urban squares.</li>
@@ -348,7 +351,7 @@
 <script>
 'use strict';
 /* =====================================================================
-   Hinterlands: turn-based empire prototype
+   HEARTHLANDS: turn-based empire prototype
    Sections: CONFIG / DATA / ART HOOK / RNG & NOISE / MAP / STATE /
    RULES / COMBAT / TURNS / AI / VISION / RENDER / UI / INPUT / BOOT
    ===================================================================== */
@@ -411,6 +414,10 @@ const CONFIG = {
   firstCityTurns: 1,         // a realm's first city goes up this fast
   mountainRoadFactor: 4,     // roads over mountains take this many times as long (300% longer)
   aiCityCooldown: 15,        // turns the AI waits between founding cities
+  stackLimit: 5,             // most units one realm can keep on a single square
+  siegeRing: 5,              // enemy-held squares around a city center (out of 8) that put it under siege
+  siegeTurns: 10,            // turns of siege that strip a city's defense bonus completely
+  encircleDamage: 25,        // health lost each turn by a military unit with enemies on every side
   homeDefenseFactor: 0.8,    // attacker's total is multiplied by this inside the defender's city ranges
   fortifyTurns: 2,           // turns a land military unit spends digging in
   fortifyBonus: 1.5,         // a fortified defender's whole total is multiplied by this
@@ -691,6 +698,26 @@ function neighbors8(x, y) { const r = []; for (const [dx, dy] of DIRS8) if (inb(
 const popOf = t => (t && t.urban && URBAN[t.urban.type].populated) ? t.urban.pop : 0;
 const isVisible = (x, y) => !!G.visible[y * G.W + x];
 
+const stackAt = (x, y, owner) => G.units.reduce((n, v) => n + (v.x === x && v.y === y && v.owner === owner ? 1 : 0), 0);
+// Put a new unit on (x, y), or the nearest square nearby that has room for it. Returns null if nowhere fits.
+function placeNewUnit(type, owner, x, y) {
+  const naval = !!UNIT_TYPES[type].naval;
+  const fits = (px, py) => {
+    if (!inb(px, py)) return false;
+    const t = T(px, py);
+    if (naval ? t.terrain !== 'water' : false) return false;
+    if (stackAt(px, py, owner) >= CONFIG.stackLimit) return false;
+    if (G.units.some(v => v.x === px && v.y === py && v.owner !== owner)) return false;
+    if (t.urban && t.owner !== owner) return false;
+    const c = territoryAt(px, py);
+    return !c || c.owner === owner;
+  };
+  for (let r = 0; r <= 3; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) !== r || !fits(x + dx, y + dy)) continue;
+    return addUnit(type, owner, x + dx, y + dy);
+  }
+  return null;
+}
 function addUnit(type, owner, x, y, free = false) {
   const u = { id: G.nextUnitId++, type, owner, x, y, moves: 1, hp: 100, pause: 0, task: null, skip: false, role: null, home: null, goal: null, dead: false, free };
   G.units.push(u);
@@ -778,8 +805,9 @@ function contactTurns(u) {
   return n;
 }
 
+// Building rules count all eight neighbors, corners included.
 function adjacentUrban(x, y, owner, landOnly = false) {
-  return neighbors(x, y).some(([nx, ny]) => {
+  return neighbors8(x, y).some(([nx, ny]) => {
     const n = T(nx, ny);
     if (!n.urban) return false;
     if (owner != null && n.owner !== owner) return false;
@@ -877,6 +905,7 @@ function canStand(u, x, y) {
   const t = T(x, y);
   if (UNIT_TYPES[u.type].naval && t.terrain !== 'water') return false;
   if (G.units.some(v => v !== u && v.x === x && v.y === y && v.owner !== u.owner)) return false;
+  if (G.units.filter(v => v !== u && v.x === x && v.y === y).length >= CONFIG.stackLimit) return false;
   if (t.urban && t.owner !== u.owner) return false;
   const c = territoryAt(x, y);
   return !(c && c.owner !== u.owner);
@@ -1091,7 +1120,42 @@ function urbanDefense(x, y) {
   if (!t.urban) return 0;
   let d = popOf(t);
   for (const [nx, ny] of neighbors(x, y)) { const n = T(nx, ny); if (n.urban && n.owner === t.owner) d += popOf(n); }
-  return d;
+  // A besieged city center loses a tenth of its bonus for each turn of siege.
+  if (t.urban.type === 'city' && t.urban.siege) d *= 1 - t.urban.siege / CONFIG.siegeTurns;
+  return Math.round(d * 10) / 10;
+}
+const siegeRing = (x, y, owner) => neighbors8(x, y).filter(([nx, ny]) =>
+  G.units.some(u => u.x === nx && u.y === ny && UNIT_TYPES[u.type].military && atWar(u.owner, owner))).length;
+// Once a round: sieges tighten or ease, and surrounded units lose strength.
+function updateSieges() {
+  forEachTile((t, x, y) => {
+    if (!t.urban || t.urban.type !== 'city') return;
+    const ux = t.urban, before = ux.siege || 0, ring = siegeRing(x, y, t.owner);
+    ux.siege = ring >= CONFIG.siegeRing ? Math.min(CONFIG.siegeTurns, before + 1) : Math.max(0, before - 1);
+    const mineCity = t.owner === 0, besiegers = G.units.some(u => u.owner === 0 && cheb(u.x, u.y, x, y) === 1);
+    if (!mineCity && !besiegers) return;
+    const whose = mineCity ? `Your city of ${ux.name}` : ux.name;
+    if (ring >= CONFIG.siegeRing && before === 0) addLog(`${whose} is under siege. Its defenses weaken by a tenth each turn.`, mineCity ? 'bad' : '');
+    else if (ux.siege === CONFIG.siegeTurns && before < CONFIG.siegeTurns) addLog(`${whose} has no defenses left: only the units inside can hold it now.`, mineCity ? 'bad' : '');
+    else if (ring < CONFIG.siegeRing && before > 0 && ux.lastRing >= CONFIG.siegeRing) addLog(`The siege of ${ux.name} has been broken. Its defenses recover a tenth each turn.`, mineCity ? '' : 'bad');
+    ux.lastRing = ring;
+  });
+}
+const encircled = u => {
+  if (!UNIT_TYPES[u.type].military) return false;
+  const naval = !!UNIT_TYPES[u.type].naval;
+  const squares = neighbors8(u.x, u.y).filter(([x, y]) => !naval || T(x, y).terrain === 'water');
+  return squares.length > 0 && squares.every(([x, y]) => G.units.some(v => v.x === x && v.y === y && UNIT_TYPES[v.type].military && atWar(v.owner, u.owner)));
+};
+function updateEncirclement() {
+  for (const u of G.units.slice()) {
+    if (!encircled(u)) { u.surrounded = 0; continue; }
+    u.surrounded = (u.surrounded || 0) + 1;
+    u.hp -= CONFIG.encircleDamage; u.rest = 0; u.hit = true;
+    const n = UNIT_TYPES[u.type].name.toLowerCase();
+    if (u.hp <= 0) { killUnit(u); if (u.owner === 0) addLog(`Your surrounded ${n} was wiped out.`, 'bad'); else if (isVisible(u.x, u.y)) addLog(`A surrounded ${G.players[u.owner].short} ${n} was wiped out.`); }
+    else if (u.owner === 0) addLog(`Your ${n} is surrounded and down to ${u.hp}%. Attack to break out.`, 'bad');
+  }
 }
 
 // Road network: every road square plus city centers, linked in all eight directions.
@@ -1435,6 +1499,7 @@ function moveCheckBase(u, tx, ty) {
   }
   const c = territoryAt(tx, ty);
   const breaksPeace = c && c.owner !== u.owner && !atWar(u.owner, c.owner) ? c.owner : null;
+  if (stackAt(tx, ty, u.owner) >= CONFIG.stackLimit) return { ok: false, reason: `That square already holds ${CONFIG.stackLimit} of your units, the most one square can.` };
   return { ok: true, kind: 'move', cost: moveCost(u.x, u.y, tx, ty, ut.naval ? null : u.owner), breaksPeace };
 }
 
@@ -1502,7 +1567,7 @@ function pillage(u) {
   u.hp = 100; u.moves = 0; u.task = null; u.fortified = false; u.acted = true; u.rest = 0;
   const modern = unitsAt(u.x, u.y).some(v => v.owner === u.owner && (v.type === 'infantry' || v.type === 'tank'));
   const home = nearestCity(u.x, u.y, victim), raised = modern ? 'liberator' : 'warrior';
-  if (home) addUnit(raised, victim, home.c.x, home.c.y);
+  if (home) placeNewUnit(raised, victim, home.c.x, home.c.y);
   const A = unitName(u.owner, u.type), V = G.players[victim];
   const text = `${cap(A)} pillaged ${victim === 0 ? 'your' : `the ${V.short}`} ${f.what}${home ? `, and ${home.c.name} raised a ${UNIT_TYPES[raised].name.toLowerCase()} in answer` : ''}.`;
   if (u.owner === 0 || victim === 0) addLog(text, victim === 0 ? 'bad' : '');
@@ -1579,6 +1644,14 @@ function doAttack(u, tx, ty) {
 
 function doCapture(u, tx, ty) {
   const t = T(tx, ty), prev = t.owner, f = fightNumbers(u, tx, ty, null);
+  if (t.urban.type === 'city' && (t.urban.siege || 0) >= CONFIG.siegeTurns) {
+    const name = urbanName(t);
+    captureCity(tx, ty, u.owner);
+    u.x = tx; u.y = ty; u.moves = 0;
+    const text = `${cap(unitName(u.owner, u.type))} marched into ${name} unopposed: the siege had left it defenseless.`;
+    if (u.owner === 0 || prev === 0) addLog(text, prev === 0 ? 'bad' : '');
+    return { ok: true, kind: 'capture', outcome: 'win' };
+  }
   const ar = d6(), dr = d6();
   const aT = Math.round((ar + f.a) * f.factor * 100) / 100, dT = dr + f.bonus;
   const A = unitName(u.owner, u.type), D = urbanName(t), wasCity = t.urban.type === 'city';
@@ -1699,8 +1772,13 @@ function processPlayer(p) {
         at = cityHarbor(x, y);
         if (!at) { pr.progress = productionTurns(x, y); if (pid === 0 && !pr.warned) addLog(`${t.urban.name} needs a harbor to launch its ship.`, 'bad'); pr.warned = true; return; }
       }
-      addUnit(pr.type, pid, at[0], at[1]);
-      pr.progress = 0; pr.warned = false;
+      if (!placeNewUnit(pr.type, pid, at[0], at[1])) {
+        pr.progress = productionTurns(x, y);
+        if (pid === 0 && !pr.crowded) addLog(`${t.urban.name} has a ${UNIT_TYPES[pr.type].name.toLowerCase()} ready but no room nearby for it; move some units away.`, 'bad');
+        pr.crowded = true;
+        return;
+      }
+      pr.progress = 0; pr.warned = false; pr.crowded = false;
       if (pid === 0) addLog(`${t.urban.name} ${UNIT_TYPES[pr.type].naval ? 'launched' : 'trained'} a ${UNIT_TYPES[pr.type].name.toLowerCase()}.`);
     }
   });
@@ -1805,6 +1883,8 @@ function endTurn() {
     if (p.ai) runAI(p);
     processPlayer(p);
   }
+  updateSieges();
+  updateEncirclement();
   checkIncidents();
   checkElimination();
   G.turn++;
@@ -1851,6 +1931,8 @@ function occupancy() {
 // the nearest goal square. Ships stay on water, and nobody walks into a realm they're at peace with.
 function bfsNext(u, isGoal) {
   const W = G.W, H = G.H, occ = occupancy(), start = u.y * W + u.x, naval = !!UNIT_TYPES[u.type].naval;
+  const mine = new Uint8Array(W * H);
+  for (const v of G.units) if (v.owner === u.owner && v !== u) mine[v.y * W + v.x]++;
   const tr = territory();
   const dist = new Int32Array(W * H).fill(1 << 30), prev = new Int32Array(W * H).fill(-1);
   const buckets = [[start]];
@@ -1874,7 +1956,7 @@ function bfsNext(u, isGoal) {
         const j = ny * W + nx, t = G.map[j];
         if (naval && t.terrain !== 'water') continue;
         const ti = tr.idx[j], terrOwner = ti >= 0 ? tr.list[ti].owner : -1;
-        const blocked = (occ[j] >= 0 && occ[j] !== u.owner) || (t.urban && t.owner !== u.owner)
+        const blocked = (occ[j] >= 0 && occ[j] !== u.owner) || (t.urban && t.owner !== u.owner) || mine[j] >= CONFIG.stackLimit
           || (terrOwner >= 0 && terrOwner !== u.owner && !atWar(u.owner, terrOwner));
         if (blocked && !isGoal(nx, ny, occ)) continue;
         const nd = d + (!naval && TERRAIN[t.terrain].slow && !t.road ? 1 + CONFIG.mountainPause : 1);
@@ -2215,6 +2297,12 @@ function aiMilitaryStep(u) {
   if (step) {
     const c = moveCheck(u, step[0], step[1]);
     if (c.ok && c.kind === 'move' && c.breaksPeace == null) { tryMove(u, step[0], step[1]); return true; }
+    const tgt = T(step[0], step[1]);
+    if (tgt.urban && tgt.urban.type === 'city' && !naval) {
+      const spot = neighbors8(u.x, u.y).find(([x, y]) => cheb(x, y, step[0], step[1]) === 1 && !G.units.some(v => v.x === x && v.y === y)
+        && (() => { const mc = moveCheck(u, x, y); return mc.ok && mc.kind === 'move' && mc.breaksPeace == null; })());
+      if (spot && stackAt(u.x, u.y, pid) > 1) { tryMove(u, spot[0], spot[1]); return true; }
+    }
     // Next to a target with poor odds: hold, unless enough friends have gathered here.
     const friends = G.units.filter(v => v.owner === pid && v.x === u.x && v.y === u.y && UNIT_TYPES[v.type].military).length;
     if (c.ok && c.breaksPeace == null && friends >= 3 && attackMargin(u, step[0], step[1]) >= -4) tryMove(u, step[0], step[1]);
@@ -2865,7 +2953,12 @@ function draw() {
       const i = y * W + x, t = G.map[i];
       if (!G.explored[i] || !t.urban || t.urban.type !== 'city') continue;
       const tx = sx(x) + s / 2, ty = sy(y) + s + 2, w = c.measureText(t.urban.name).width + 10;
-      c.fillStyle = 'rgba(15,20,27,0.78)';
+      const sieged = t.urban.siege > 0;
+      if (sieged) {
+        c.setLineDash([s * 0.1, s * 0.07]); c.strokeStyle = '#e0533c'; c.lineWidth = Math.max(2, s * 0.06);
+        c.strokeRect(sx(x) + s * 0.06, sy(y) + s * 0.06, s * 0.88, s * 0.88); c.setLineDash([]);
+      }
+      c.fillStyle = sieged ? 'rgba(150,36,28,0.92)' : 'rgba(15,20,27,0.78)';
       c.beginPath(); c.roundRect ? c.roundRect(tx - w / 2, ty - 1, w, fs + 5, 4) : c.rect(tx - w / 2, ty - 1, w, fs + 5); c.fill();
       c.fillStyle = '#f3ecd9'; c.fillText(t.urban.name, tx, ty + 1);
     }
@@ -3004,6 +3097,7 @@ function unitHTML(u) {
       : `To heal, bring it inside your borders and keep it still, without fighting, for ${plural(CONFIG.healTurns, 'turn')}.`}</p>`;
   }
   if (mine && u.free && !occ) h += '<p class="note">One of your founding units, so it costs no upkeep.</p>';
+  if (encircled(u)) h += `<p class="status warn">Surrounded: enemies hold every square around it, so it loses ${CONFIG.encircleDamage}% strength each turn. Attack to break out.</p>`;
   if (u.pause > 0) h += '<p class="note">Crossing mountains, so it must rest through next turn too.</p>';
   if (u.type === 'ship') h += `<p class="note">Stays on water. Fights at ${CONFIG.navalBoost} times strength against land units on water.</p>`;
   const ct = contactTurns(u);
@@ -3153,6 +3247,10 @@ function urbanHTML(t, x, y) {
   h += `<div><dt>Defense bonus</dt><dd>+${urbanDefense(x, y)}</dd></div>`;
   if (type !== 'industrial') h += `<div><dt>Gold</dt><dd>+${tileGold(t, x, y).toFixed(1)}</dd></div>`;
   h += '</dl>';
+  if (type === 'city' && ux.siege) {
+    const left = Math.round((1 - ux.siege / CONFIG.siegeTurns) * 100);
+    h += `<p class="status warn">${ux.lastRing >= CONFIG.siegeRing ? `Under siege: ${ux.lastRing} of the 8 squares around it are held by enemies.` : 'Recovering from a siege.'} Its defense bonus is at ${left}%${left === 0 ? ', so only the units inside can defend it' : ''}.</p>`;
+  }
   if (type === 'city' && ux.upgrades && Object.keys(ux.upgrades).length)
     h += `<p class="status">Upgrades: ${Object.keys(ux.upgrades).map(k => PROJECTS[k].name).join(', ')}.</p>`;
   if ((type === 'industrial' || type === 'commercial') && g && g.city) {
@@ -3291,7 +3389,7 @@ function showToast(rec) {
   const aSum = (a.factor < 1
     ? `(${a.roll} + ${fmtNum(Math.round(a.mod * 10) / 10)} attack) \u00d7 ${a.factor} = <b>${fmtNum(a.total)}</b><div class="who">Fighting inside a rival's city range</div>`
     : `${a.roll} + ${fmtNum(Math.round(a.mod * 10) / 10)} attack = <b>${fmtNum(a.total)}</b>`) + (a.boost ? `<div class="who">Ship at sea: ${CONFIG.navalBoost}\u00d7 attack</div>` : '');
-  const dInner = `${d.roll}${d.city ? '' : ` + ${fmtNum(Math.round(d.mod * 10) / 10)} defense`}${d.bonus ? ` + ${d.bonus} city` : ''}`;
+  const dInner = `${d.roll}${d.city ? '' : ` + ${fmtNum(Math.round(d.mod * 10) / 10)} defense`}${d.bonus ? ` + ${fmtNum(d.bonus)} city` : ''}`;
   const dSum = (d.fort > 1 ? `(${dInner}) \u00d7 ${d.fort} = <b>${fmtNum(d.total)}</b><div class="who">Fortified</div>` : `${dInner} = <b>${fmtNum(d.total)}</b>`)
     + (d.boost ? `<div class="who">Ship at sea: ${CONFIG.navalBoost}\u00d7 defense</div>` : '');
   el.innerHTML = `<div class="duel">${side(a)}<div class="sum">${aSum}</div></div>
