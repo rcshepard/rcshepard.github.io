@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What fits in the NEH request</title>
+<style>
+:root {
+  color-scheme: light;
+  --paper: #F5F6F2;
+  --panel: #FFFFFF;
+  --ink: #23262B;
+  --muted: #5D636B;
+  --rule: #D3D6CE;
+  --rule-strong: #9EA39B;
+  --brick: #E2A39A;
+  --frame: #EACD7C;
+  --stone: #90B3C9;
+  --iron: #AEB5A4;
+  --on-swatch: #23262B;
+  --ok: #2E6A4E;
+  --warn: #8A5A00;
+  --over: #B0392D;
+  --focus: #2C5D8A;
+  --hatch: rgba(176, 57, 45, 0.5);
+  --vacant: rgba(35, 38, 43, 0.06);
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --sans: "Avenir Next", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --paper: #1C2024;
+    --panel: #242A2F;
+    --ink: #E6E8E3;
+    --muted: #A3A9A1;
+    --rule: #384047;
+    --rule-strong: #5A626B;
+    --brick: #C27E75;
+    --frame: #C7AC5C;
+    --stone: #6E95AC;
+    --iron: #87917C;
+    --on-swatch: #15181B;
+    --ok: #80C6A1;
+    --warn: #E3B45B;
+    --over: #F2897D;
+    --focus: #8DB9E2;
+    --hatch: rgba(242, 137, 125, 0.5);
+    --vacant: rgba(230, 232, 227, 0.06);
+  }
+}
+* { box-sizing: border-box; }
+html { background: var(--paper); }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.wrap { max-width: 1200px; margin: 0 auto; padding: 32px 24px 64px; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; color: var(--ink); margin: 0; }
+h1 { font-size: 2.25rem; line-height: 1.15; letter-spacing: -0.01em; }
+h2 { font-size: 1.3rem; line-height: 1.3; }
+p { margin: 0; }
+.lede { margin-top: 8px; color: var(--muted); max-width: 70ch; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- The block: the cap drawn as a city lot ---------- */
+.block-wrap { margin: 28px 0 8px; }
+.block-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
+.block-total { font-family: var(--serif); font-size: 1.6rem; }
+.block-diff { font-weight: 600; }
+.block-diff.under { color: var(--ok); }
+.block-diff.over { color: var(--over); }
+.block {
+  position: relative;
+  height: 92px;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  background: var(--vacant);
+}
+.lot {
+  position: absolute; top: 0; bottom: 0; left: 0;
+  border-right: 3px dashed var(--ink);
+  background: repeating-linear-gradient(90deg, transparent 0 11px, var(--rule) 11px 12px);
+}
+.lot-label {
+  position: absolute; top: -26px; right: 0; transform: translateX(50%);
+  font-size: 0.8rem; color: var(--muted); white-space: nowrap;
+}
+.parcel {
+  position: absolute; top: 10px; bottom: 10px;
+  border: 1.5px solid var(--ink);
+  border-left-width: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--on-swatch);
+  font-family: var(--serif); font-size: 0.95rem; font-weight: 600;
+  overflow: hidden;
+}
+.parcel.first { border-left-width: 1.5px; }
+.parcel.overflow { background-image: repeating-linear-gradient(135deg, var(--hatch) 0 3px, transparent 3px 8px); }
+.t-staff { background-color: var(--brick); }
+.t-students { background-color: var(--frame); }
+.t-lump { background-color: var(--stone); }
+.t-nooh { background-color: var(--iron); }
+.scale { position: relative; height: 34px; margin-top: 6px; }
+.scale-bar { position: absolute; top: 0; height: 7px; border: 1px solid var(--ink); }
+.scale-bar.dark { background: var(--ink); }
+.scale-tick { position: absolute; top: 10px; transform: translateX(-50%); font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 4px; font-size: 0.85rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 18px; height: 12px; border: 1px solid var(--ink); display: inline-block; }
+.sw.overflow { background-image: repeating-linear-gradient(135deg, var(--hatch) 0 3px, transparent 3px 8px); background-color: transparent; }
+
+/* ---------- Layout ---------- */
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 40px; margin-top: 32px; align-items: start; }
+@media (max-width: 960px) { .grid { grid-template-columns: 1fr; } .side { position: static !important; } }
+.list-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 2px solid var(--ink); }
+.list-head p { color: var(--muted); font-size: 0.9rem; }
+
+/* ---------- Line items ---------- */
+.item {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 0 14px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.item.off .item-body { opacity: 0.55; }
+.rank {
+  font-family: var(--serif); font-size: 1.5rem; line-height: 1; text-align: center;
+  padding-top: 6px; border-top: 6px solid var(--rule-strong);
+}
+.rank.t-staff-b { border-top-color: var(--brick); }
+.rank.t-students-b { border-top-color: var(--frame); }
+.rank.t-lump-b { border-top-color: var(--stone); }
+.rank.t-nooh-b { border-top-color: var(--iron); }
+.item-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+.item-name { font-family: var(--serif); font-size: 1.15rem; font-weight: 600; }
+.item-name input { font-family: var(--serif); font-size: 1.1rem; font-weight: 600; border: 1px solid var(--rule-strong); background: var(--panel); padding: 2px 6px; border-radius: 4px; width: min(100%, 320px); }
+.item-note { color: var(--muted); font-size: 0.9rem; margin-top: 2px; max-width: 64ch; }
+.item-cost { text-align: right; }
+.item-cost .amt { font-family: var(--serif); font-size: 1.2rem; }
+.status { display: inline-block; font-size: 0.8rem; font-weight: 600; padding: 1px 8px; border-radius: 3px; border: 1px solid currentColor; margin-top: 4px; }
+.status.fits { color: var(--ok); }
+.status.partial { color: var(--warn); }
+.status.over { color: var(--over); }
+.status.off { color: var(--muted); }
+.controls { display: flex; flex-wrap: wrap; gap: 14px 22px; margin-top: 12px; align-items: flex-end; }
+.ctl { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); }
+.ctl input[type="number"], .ctl select, .ctl input[type="text"] {
+  border: 1px solid var(--rule-strong); background: var(--panel); border-radius: 4px; padding: 5px 8px; color: var(--ink); width: 120px;
+}
+.ctl input[type="range"] { width: 180px; accent-color: var(--focus); }
+.ctl .val { color: var(--ink); font-weight: 600; }
+.seg { display: inline-flex; border: 1px solid var(--rule-strong); border-radius: 4px; overflow: hidden; }
+.seg label { position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg span { display: block; padding: 5px 9px; color: var(--ink); background: var(--panel); border-right: 1px solid var(--rule); }
+.seg label:last-child span { border-right: 0; }
+.seg input:checked + span { background: var(--ink); color: var(--paper); }
+.seg input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: -3px; }
+.include { display: inline-flex; gap: 8px; align-items: center; font-size: 0.9rem; color: var(--ink); }
+.include input { width: 18px; height: 18px; accent-color: var(--focus); }
+.math { margin-top: 10px; font-size: 0.85rem; color: var(--muted); }
+.row-actions { display: inline-flex; gap: 6px; margin-left: 10px; }
+.icon-btn { border: 1px solid var(--rule-strong); background: var(--panel); border-radius: 4px; width: 30px; height: 28px; cursor: pointer; line-height: 1; }
+.icon-btn:disabled { opacity: 0.35; cursor: default; }
+.text-btn { border: 1px solid var(--rule-strong); background: var(--panel); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+.text-btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.add-row { padding-top: 18px; }
+
+/* ---------- Side panel ---------- */
+.side { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 28px; }
+.side section { border-top: 2px solid var(--ink); padding-top: 12px; }
+.sum-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.95rem; }
+.sum-table td { padding: 5px 0; border-bottom: 1px solid var(--rule); }
+.sum-table td:last-child { text-align: right; }
+.sum-table tr.total td { font-family: var(--serif); font-size: 1.15rem; font-weight: 600; border-bottom: 2px solid var(--ink); }
+.fitline { margin-top: 10px; font-size: 0.9rem; color: var(--muted); }
+.presets { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.presets button { text-align: left; }
+.presets small { display: block; color: var(--muted); font-size: 0.8rem; }
+.assume { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: center; margin-top: 10px; font-size: 0.9rem; }
+.assume input[type="number"] { width: 110px; border: 1px solid var(--rule-strong); background: var(--panel); border-radius: 4px; padding: 4px 8px; color: var(--ink); text-align: right; }
+.assume .chk { display: flex; gap: 8px; align-items: center; grid-column: 1 / -1; }
+.assume .chk input { accent-color: var(--focus); width: 16px; height: 16px; }
+.fine { font-size: 0.8rem; color: var(--muted); margin-top: 10px; }
+@media (prefers-reduced-motion: no-preference) {
+  .parcel { transition: left 0.25s ease, width 0.25s ease; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>What fits in the NEH request</h1>
+    <p class="lede">Collections Stewardship, Level 2, two-year project. Costs are funded in priority order until the cap runs out. Change any line, reorder the priorities, or load a scenario to compare.</p>
+  </header>
+
+  <div class="block-wrap" aria-live="polite">
+    <div class="block-head">
+      <div><span class="block-total" id="blockTotal">$0</span> <span class="muted" style="color:var(--muted)">requested, including indirect costs</span></div>
+      <div class="block-diff" id="blockDiff"></div>
+    </div>
+    <div class="block" id="block" role="img" aria-label="Budget drawn against the cap"></div>
+    <div class="scale" id="scale" aria-hidden="true"></div>
+    <div class="legend">
+      <span><i class="sw t-staff"></i>Staff</span>
+      <span><i class="sw t-students"></i>Students</span>
+      <span><i class="sw t-lump"></i>Other costs</span>
+      <span><i class="sw t-nooh"></i>No indirect costs</span>
+      <span><i class="sw overflow"></i>Over the cap</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <main>
+      <div class="list-head">
+        <h2>Priorities</h2>
+        <p>Numbers are the order in which costs get funded.</p>
+      </div>
+      <div id="list"></div>
+      <div class="add-row"><button class="text-btn" id="addItem" type="button">Add an expense</button></div>
+    </main>
+
+    <aside class="side">
+      <section>
+        <h2>Summary</h2>
+        <table class="sum-table" id="sumTable"></table>
+        <p class="fitline" id="fitLine"></p>
+      </section>
+      <section>
+        <h2>Scenarios</h2>
+        <div class="presets">
+          <button class="text-btn" type="button" data-preset="wish">Everything on the wish list<small>Shows the full ask against the cap</small></button>
+          <button class="text-btn" type="button" data-preset="fullCurator">Lead plus a full-time curator<small>Curator for about 14 months, no students</small></button>
+          <button class="text-btn" type="button" data-preset="halfCurator">Lead plus a half-time curator<small>Curator for 24 months, two students</small></button>
+        </div>
+      </section>
+      <section>
+        <h2>Assumptions</h2>
+        <div class="assume" id="assume">
+          <label for="a-cap">Cap on the request ($)</label><input id="a-cap" type="number" step="1000" min="0">
+          <label for="a-months">Project length (months)</label><input id="a-months" type="number" step="1" min="1" max="36">
+          <label for="a-indirect">Indirect cost rate (%)</label><input id="a-indirect" type="number" step="0.5" min="0">
+          <label for="a-fica">Payroll tax (%)</label><input id="a-fica" type="number" step="0.01" min="0">
+          <label for="a-retTerm">Retirement, term roles (%)</label><input id="a-retTerm" type="number" step="0.5" min="0">
+          <label for="a-retReg">Retirement, regular roles (%)</label><input id="a-retReg" type="number" step="0.5" min="0">
+          <label for="a-health">Health, per month ($)</label><input id="a-health" type="number" step="25" min="0">
+          <label for="a-equip">Equipment threshold ($)</label><input id="a-equip" type="number" step="500" min="0">
+          <label class="chk"><input id="a-studentTax" type="checkbox"> Charge payroll tax on student wages</label>
+        </div>
+        <p class="fine">Planning estimates only. Administration will apply the University's official benefits and indirect rates. Equipment at or above the threshold and participant support are left out of the indirect cost base.</p>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* ===================== CALC START ===================== */
+function makeAssumptions() {
+  return { cap: 350000, months: 24, indirect: 38, fica: 7.65, retTerm: 4, retReg: 8, health: 650, equip: 5000, studentTax: false };
+}
+
+function makeItems() {
+  return [
+    { id: 'lead', type: 'staff', locked: true, on: true, name: 'Technical lead', note: 'Required. Oversees the workflow and collection building.', salary: 65000, fte: 1, months: 24, health: 'full', ret: 'term' },
+    { id: 'curator', type: 'staff', on: true, name: 'Data curator / cataloger', note: 'Supervises description and deposit into UChicagoNode as the collection grows.', salary: 60000, fte: 0.5, months: 24, health: 'full', ret: 'term' },
+	{ id: 'review', type: 'lump', on: true, name: 'Outside workflow review', note: 'An external reviewer to evaluate the workflow and its metrics.', amount: 5000, overhead: 'yes' },
+    { id: 'students', type: 'students', on: true, name: 'Student workers', note: 'Chicago Studies funds additional students separately.', count: 0, rate: 17.5, hours: 10, weeks: 30, months: 24 },
+    { id: 'supplies', type: 'lump', on: true, name: 'Scanning supplies and conservation', note: 'Color targets, storage media, minor repairs to fragile volumes.', amount: 0, overhead: 'yes' },
+    { id: 'hosting', type: 'lump', on: true, name: 'Hosting and computing', note: 'Probably contributed by the Library instead.', amount: 0, overhead: 'yes' },
+    { id: 'publication', type: 'lump', on: true, name: 'Publication and outreach', note: 'Open-access fees for an article on the workflow.', amount: 0, overhead: 'yes' },
+    { id: 'developer', type: 'staff', on: true, name: 'Web/GIS developer', note: 'Website build. Moves to Mellon with the AI work unless NEH funds a basic viewer.', salary: 95000, fte: 0.0, months: 12, health: 'none', ret: 'term' },
+    { id: 'accessibility', type: 'lump', on: true, name: 'Accessibility audit', note: 'Only needed if NEH funds the website.', amount: 0, overhead: 'yes' },
+    { id: 'tokens', type: 'lump', on: true, name: 'Language model token costs', note: 'AI-assisted analysis. Moved to the Mellon proposal.', amount: 0, overhead: 'yes' },
+    { id: 'training', type: 'lump', on: true, name: 'Train-the-trainer stipends', note: 'Participant support, so no indirect costs. Moved to Mellon with partners.', amount: 0, overhead: 'no' },
+    { id: 'equipment', type: 'lump', on: false, name: 'Scanning equipment', note: 'Only if in-house capacity needs an upgrade. No indirect costs at or above the equipment threshold.', amount: 20000, overhead: 'equipment' },
+    { id: 'pm', type: 'staff', on: false, name: 'Project manager, separate from the lead', note: 'Currently merged into the lead role.', salary: 70000, fte: 0, months: 24, health: 'full', ret: 'term' },
+    { id: 'gis', type: 'staff', on: false, name: 'GIS Librarian time', note: 'Currently contributed rather than charged.', salary: 80000, fte: 0.0, months: 0, health: 'prorated', ret: 'regular' },
+    { id: 'travel', type: 'lump', on: false, name: 'Travel', note: 'Dropped from this budget.', amount: 0, overhead: 'yes' }
+  ];
+}
+
+function retRate(item, a) {
+  if (item.ret === 'term') return a.retTerm / 100;
+  if (item.ret === 'regular') return a.retReg / 100;
+  return 0;
+}
+
+function directCost(item, a) {
+  if (item.type === 'staff') {
+    const m = Math.min(item.months, a.months);
+    const wages = item.salary * item.fte * (m / 12);
+    const benefits = wages * (a.fica / 100 + retRate(item, a));
+    let health = 0;
+    if (item.health === 'full') health = a.health * m;
+    if (item.health === 'prorated') health = a.health * m * item.fte;
+    return wages + benefits + health;
+  }
+  if (item.type === 'students') {
+    const m = Math.min(item.months, a.months);
+    const wages = item.count * item.rate * item.hours * item.weeks * (m / 12);
+    return wages * (a.studentTax ? 1 + a.fica / 100 : 1);
+  }
+  return item.amount || 0;
+}
+
+function carriesOverhead(item, a) {
+  if (item.type !== 'lump') return true;
+  if (item.overhead === 'no') return false;
+  if (item.overhead === 'equipment') return (item.amount || 0) < a.equip;
+  return true;
+}
+
+function studentHours(item, a) {
+  const m = Math.min(item.months, a.months);
+  return item.count * item.hours * item.weeks * (m / 12);
+}
+
+function compute(items, a) {
+  let remaining = a.cap;
+  let cursor = 0;
+  const rows = items.map(function (item) {
+    const direct = directCost(item, a);
+    const oh = carriesOverhead(item, a) ? direct * a.indirect / 100 : 0;
+    const total = direct + oh;
+    let status = 'off', funded = 0;
+    if (item.on) {
+      if (total <= remaining + 0.5) { status = 'fits'; funded = total; remaining -= total; }
+      else if (remaining > 0.5) { status = 'partial'; funded = remaining; remaining = 0; }
+      else { status = 'over'; funded = 0; }
+    }
+    const row = { item: item, direct: direct, oh: oh, total: total, status: status, funded: funded, start: cursor };
+    if (item.on) cursor += total;
+    return row;
+  });
+  const on = rows.filter(function (r) { return r.item.on; });
+  const sum = function (f) { return on.reduce(function (s, r) { return s + f(r); }, 0); };
+  return {
+    rows: rows,
+    staff: sum(function (r) { return r.item.type === 'staff' ? r.direct : 0; }),
+    students: sum(function (r) { return r.item.type === 'students' ? r.direct : 0; }),
+    other: sum(function (r) { return r.item.type === 'lump' ? r.direct : 0; }),
+    indirect: sum(function (r) { return r.oh; }),
+    total: sum(function (r) { return r.total; }),
+    counts: {
+      fits: on.filter(function (r) { return r.status === 'fits'; }).length,
+      partial: on.filter(function (r) { return r.status === 'partial'; }).length,
+      over: on.filter(function (r) { return r.status === 'over'; }).length,
+      on: on.length
+    }
+  };
+}
+
+function applyPreset(name, items) {
+  const by = {};
+  items.forEach(function (i) { by[i.id] = i; });
+  if (name === 'wish') return makeItems();
+  items.forEach(function (i) { if (!i.locked) i.on = false; });
+  const lead = by.lead;
+  if (lead) { lead.salary = 65000; lead.fte = 1; lead.months = 24; lead.health = 'full'; lead.ret = 'term'; }
+  if (name === 'fullCurator' && by.curator) {
+    Object.assign(by.curator, { on: true, salary: 60000, fte: 1, months: 14, health: 'full', ret: 'term' });
+  }
+  if (name === 'halfCurator') {
+    if (by.curator) Object.assign(by.curator, { on: true, salary: 60000, fte: 0.5, months: 24, health: 'none', ret: 'term' });
+    if (by.students) Object.assign(by.students, { on: true, count: 2, rate: 17.5, hours: 10, weeks: 30, months: 24 });
+  }
+  return items;
+}
+/* ===================== CALC END ===================== */
+
+const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+const num = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+let A = makeAssumptions();
+let ITEMS = makeItems();
+let customCount = 0;
+
+const listEl = document.getElementById('list');
+
+function typeClass(item) {
+  if (item.type === 'lump' && !carriesOverhead(item, A)) return 't-nooh';
+  return 't-' + item.type;
+}
+
+function segFTE(item) {
+  const opts = [0.1, 0.25, 0.5, 0.75, 1];
+  return '<div class="seg" role="radiogroup" aria-label="Time on the project">' + opts.map(function (v) {
+    const label = v === 1 ? 'Full' : Math.round(v * 100) + '%';
+    return '<label><input type="radio" name="fte-' + item.id + '" data-id="' + item.id + '" data-k="fte" value="' + v + '"' + (item.fte === v ? ' checked' : '') + '><span>' + label + '</span></label>';
+  }).join('') + '</div>';
+}
+
+function controlsHTML(item) {
+  const id = item.id;
+  if (item.type === 'staff') {
+    return '<div class="controls">' +
+      '<div class="ctl"><label for="sal-' + id + '">Salary (full-time rate)</label><input id="sal-' + id + '" type="number" min="0" step="1000" data-id="' + id + '" data-k="salary" value="' + item.salary + '"></div>' +
+      '<div class="ctl"><span>Time on the project</span>' + segFTE(item) + '</div>' +
+      '<div class="ctl"><label for="mo-' + id + '">Months: <span class="val" data-show="months-' + id + '">' + item.months + '</span></label><input id="mo-' + id + '" type="range" min="1" max="' + A.months + '" step="1" data-id="' + id + '" data-k="months" value="' + Math.min(item.months, A.months) + '"></div>' +
+      '<div class="ctl"><label for="hl-' + id + '">Health coverage</label><select id="hl-' + id + '" data-id="' + id + '" data-k="health">' +
+        '<option value="full"' + (item.health === 'full' ? ' selected' : '') + '>Full premium</option>' +
+        '<option value="prorated"' + (item.health === 'prorated' ? ' selected' : '') + '>Share by time</option>' +
+        '<option value="none"' + (item.health === 'none' ? ' selected' : '') + '>None</option></select></div>' +
+      '<div class="ctl"><label for="rt-' + id + '">Retirement</label><select id="rt-' + id + '" data-id="' + id + '" data-k="ret">' +
+        '<option value="term"' + (item.ret === 'term' ? ' selected' : '') + '>Term rate</option>' +
+        '<option value="regular"' + (item.ret === 'regular' ? ' selected' : '') + '>Regular rate</option>' +
+        '<option value="none"' + (item.ret === 'none' ? ' selected' : '') + '>None</option></select></div>' +
+      '</div>';
+  }
+  if (item.type === 'students') {
+    return '<div class="controls">' +
+      '<div class="ctl"><label for="ct-' + id + '">Students</label><input id="ct-' + id + '" type="number" min="0" step="1" data-id="' + id + '" data-k="count" value="' + item.count + '"></div>' +
+      '<div class="ctl"><label for="rate-' + id + '">Hourly rate ($)</label><input id="rate-' + id + '" type="number" min="0" step="0.25" data-id="' + id + '" data-k="rate" value="' + item.rate + '"></div>' +
+      '<div class="ctl"><label for="hr-' + id + '">Hours per week</label><input id="hr-' + id + '" type="number" min="0" step="1" data-id="' + id + '" data-k="hours" value="' + item.hours + '"></div>' +
+      '<div class="ctl"><label for="wk-' + id + '">Weeks per year</label><input id="wk-' + id + '" type="number" min="0" max="52" step="1" data-id="' + id + '" data-k="weeks" value="' + item.weeks + '"></div>' +
+      '<div class="ctl"><label for="mo-' + id + '">Months: <span class="val" data-show="months-' + id + '">' + item.months + '</span></label><input id="mo-' + id + '" type="range" min="1" max="' + A.months + '" step="1" data-id="' + id + '" data-k="months" value="' + Math.min(item.months, A.months) + '"></div>' +
+      '</div>';
+  }
+  return '<div class="controls">' +
+    '<div class="ctl"><label for="amt-' + id + '">Amount for the project ($)</label><input id="amt-' + id + '" type="number" min="0" step="500" data-id="' + id + '" data-k="amount" value="' + item.amount + '"></div>' +
+    '<div class="ctl"><label for="amr-' + id + '">Adjust</label><input id="amr-' + id + '" type="range" min="0" max="100000" step="500" data-id="' + id + '" data-k="amount" value="' + item.amount + '"></div>' +
+    '<div class="ctl"><label for="oh-' + id + '">Indirect costs</label><select id="oh-' + id + '" data-id="' + id + '" data-k="overhead">' +
+      '<option value="yes"' + (item.overhead === 'yes' ? ' selected' : '') + '>Applied</option>' +
+      '<option value="no"' + (item.overhead === 'no' ? ' selected' : '') + '>Not applied</option>' +
+      '<option value="equipment"' + (item.overhead === 'equipment' ? ' selected' : '') + '>Equipment rule</option></select></div>' +
+    '</div>';
+}
+
+function render() {
+  listEl.innerHTML = ITEMS.map(function (item, idx) {
+    const first = idx === 0, last = idx === ITEMS.length - 1;
+    const nameHTML = item.custom
+      ? '<label class="item-name"><span class="sr" style="position:absolute;left:-9999px">Expense name</span><input type="text" data-id="' + item.id + '" data-k="name" value="' + item.name.replace(/"/g, '&quot;') + '"></label>'
+      : '<div class="item-name">' + item.name + '</div>';
+    const includeHTML = item.locked
+      ? '<span class="include"><input type="checkbox" checked disabled aria-label="Included (required)"> Required</span>'
+      : '<label class="include"><input type="checkbox" data-id="' + item.id + '" data-k="on"' + (item.on ? ' checked' : '') + '> Include</label>';
+    const moveHTML = item.locked ? '' :
+      '<span class="row-actions">' +
+        '<button class="icon-btn" type="button" data-move="up" data-id="' + item.id + '" aria-label="Move ' + item.name + ' up"' + (idx <= 1 ? ' disabled' : '') + '>&#8593;</button>' +
+        '<button class="icon-btn" type="button" data-move="down" data-id="' + item.id + '" aria-label="Move ' + item.name + ' down"' + (last ? ' disabled' : '') + '>&#8595;</button>' +
+        (item.custom ? '<button class="icon-btn" type="button" data-remove="' + item.id + '" aria-label="Remove ' + item.name + '">&#215;</button>' : '') +
+      '</span>';
+    return '<article class="item' + (item.on ? '' : ' off') + '" data-row="' + item.id + '">' +
+      '<div class="rank" data-rank="' + item.id + '">' + (idx + 1) + '</div>' +
+      '<div class="item-body">' +
+        '<div class="item-top">' +
+          '<div>' + nameHTML + (item.note ? '<p class="item-note">' + item.note + '</p>' : '') + '</div>' +
+          '<div class="item-cost"><div class="amt" data-total="' + item.id + '"></div><div data-status="' + item.id + '"></div></div>' +
+        '</div>' +
+        controlsHTML(item) +
+        '<div class="controls" style="margin-top:10px">' + includeHTML + moveHTML + '</div>' +
+        '<p class="math" data-math="' + item.id + '"></p>' +
+      '</div>' +
+    '</article>';
+  }).join('');
+  update();
+}
+
+function statusHTML(r) {
+  if (r.status === 'off') return '<span class="status off">Not included</span>';
+  if (r.status === 'fits') return '<span class="status fits">Fits</span>';
+  if (r.status === 'partial') return '<span class="status partial">Partly fits, ' + money.format(r.total - r.funded) + ' short</span>';
+  return '<span class="status over">Over the cap</span>';
+}
+
+function mathHTML(r) {
+  const it = r.item;
+  let lead = '';
+  if (it.type === 'staff') lead = 'Salary and benefits ' + money.format(r.direct);
+  else if (it.type === 'students') lead = num.format(studentHours(it, A)) + ' student hours, ' + money.format(r.direct);
+  else lead = 'Direct cost ' + money.format(r.direct);
+  const oh = r.oh > 0 ? ' plus ' + money.format(r.oh) + ' indirect' : ', no indirect costs';
+  return lead + oh + '.';
+}
+
+function update() {
+  const res = compute(ITEMS, A);
+  res.rows.forEach(function (r) {
+    const id = r.item.id;
+    const row = listEl.querySelector('[data-row="' + id + '"]');
+    if (!row) return;
+    row.classList.toggle('off', !r.item.on);
+    row.querySelector('[data-total="' + id + '"]').textContent = money.format(r.total);
+    row.querySelector('[data-status="' + id + '"]').innerHTML = statusHTML(r);
+    row.querySelector('[data-math="' + id + '"]').textContent = mathHTML(r);
+    const rank = row.querySelector('[data-rank="' + id + '"]');
+    rank.className = 'rank ' + typeClass(r.item) + '-b';
+    const show = row.querySelector('[data-show="months-' + id + '"]');
+    if (show) show.textContent = Math.min(r.item.months, A.months);
+  });
+
+  // Summary
+  const diff = A.cap - res.total;
+  document.getElementById('blockTotal').textContent = money.format(res.total);
+  const d = document.getElementById('blockDiff');
+  d.className = 'block-diff ' + (diff >= 0 ? 'under' : 'over');
+  d.textContent = diff >= 0 ? money.format(diff) + ' under the ' + money.format(A.cap) + ' cap' : money.format(-diff) + ' over the ' + money.format(A.cap) + ' cap';
+  document.getElementById('sumTable').innerHTML =
+    '<tr><td>Staff salaries and benefits</td><td>' + money.format(res.staff) + '</td></tr>' +
+    '<tr><td>Students</td><td>' + money.format(res.students) + '</td></tr>' +
+    '<tr><td>Other costs</td><td>' + money.format(res.other) + '</td></tr>' +
+    '<tr><td>Indirect costs (' + A.indirect + '%)</td><td>' + money.format(res.indirect) + '</td></tr>' +
+    '<tr class="total"><td>Total request</td><td>' + money.format(res.total) + '</td></tr>' +
+    '<tr><td>Cap</td><td>' + money.format(A.cap) + '</td></tr>' +
+    '<tr><td>' + (diff >= 0 ? 'Room left' : 'Over the cap') + '</td><td style="color:var(' + (diff >= 0 ? '--ok' : '--over') + ')">' + money.format(Math.abs(diff)) + '</td></tr>';
+  const c = res.counts;
+  let line = c.fits + ' of ' + c.on + ' included ' + (c.on === 1 ? 'item fits' : 'items fit') + ' within the cap.';
+  if (c.partial) line += ' One is only partly funded.';
+  if (c.over) line += ' ' + c.over + (c.over === 1 ? ' doesn\u2019t fit at all.' : ' don\u2019t fit at all.');
+  document.getElementById('fitLine').textContent = line;
+
+  drawBlock(res);
+}
+
+function drawBlock(res) {
+  const block = document.getElementById('block');
+  const scaleMax = Math.max(res.total, A.cap) || 1;
+  const pct = function (v) { return (v / scaleMax * 100).toFixed(3) + '%'; };
+  let html = '<div class="lot" style="width:' + pct(A.cap) + '"><span class="lot-label">Cap ' + money.format(A.cap) + '</span></div>';
+  let firstDrawn = true;
+  res.rows.forEach(function (r, idx) {
+    if (!r.item.on || r.total <= 0) return;
+    const rank = ITEMS.indexOf(r.item) + 1;
+    const cls = typeClass(r.item);
+    const title = rank + '. ' + r.item.name + ': ' + money.format(r.total);
+    const inside = Math.max(0, Math.min(r.total, A.cap - r.start));
+    const outside = r.total - inside;
+    const showLabel = function (w) { return (w / scaleMax) > 0.035 ? rank : ''; };
+    if (inside > 0) {
+      html += '<div class="parcel ' + cls + (firstDrawn ? ' first' : '') + '" style="left:' + pct(r.start) + ';width:' + pct(inside) + '" title="' + title + '">' + showLabel(inside) + '</div>';
+      firstDrawn = false;
+    }
+    if (outside > 0) {
+      html += '<div class="parcel overflow ' + cls + (firstDrawn ? ' first' : '') + '" style="left:' + pct(r.start + inside) + ';width:' + pct(outside) + '" title="' + title + ' (over the cap)">' + (inside > 0 ? '' : showLabel(outside)) + '</div>';
+      firstDrawn = false;
+    }
+  });
+  block.innerHTML = html;
+  block.setAttribute('aria-label', 'Total request ' + money.format(res.total) + ' against a cap of ' + money.format(A.cap));
+
+  // Scale bar in $50,000 segments, alternating like a map scale
+  const scale = document.getElementById('scale');
+  const step = scaleMax > 600000 ? 100000 : 50000;
+  let s = '';
+  for (let v = 0, i = 0; v < scaleMax; v += step, i++) {
+    const w = Math.min(step, scaleMax - v);
+    s += '<div class="scale-bar' + (i % 2 === 0 ? ' dark' : '') + '" style="left:' + pct(v) + ';width:' + pct(w) + '"></div>';
+    s += '<span class="scale-tick" style="left:' + pct(v) + '">' + (v === 0 ? '$0' : '$' + (v / 1000) + 'k') + '</span>';
+  }
+  scale.innerHTML = s;
+}
+
+// ---------- Events ----------
+function findItem(id) { return ITEMS.find(function (i) { return i.id === id; }); }
+
+listEl.addEventListener('input', function (e) {
+  const t = e.target, id = t.dataset.id, k = t.dataset.k;
+  if (!id || !k) return;
+  const item = findItem(id);
+  if (k === 'on') { item.on = t.checked; update(); return; }
+  if (k === 'name') { item.name = t.value; return; }
+  if (k === 'health' || k === 'ret' || k === 'overhead') { item[k] = t.value; update(); return; }
+  const v = parseFloat(t.value);
+  item[k] = isNaN(v) ? 0 : v;
+  if (k === 'amount') {
+    const row = listEl.querySelector('[data-row="' + id + '"]');
+    row.querySelectorAll('[data-k="amount"]').forEach(function (el) { if (el !== t) el.value = item.amount; });
+  }
+  update();
+});
+listEl.addEventListener('change', function (e) {
+  const t = e.target;
+  if (t.dataset.k === 'fte') { findItem(t.dataset.id).fte = parseFloat(t.value); update(); }
+  if (t.dataset.k === 'health' || t.dataset.k === 'ret' || t.dataset.k === 'overhead') { findItem(t.dataset.id)[t.dataset.k] = t.value; update(); }
+});
+listEl.addEventListener('click', function (e) {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.move) {
+    const i = ITEMS.findIndex(function (x) { return x.id === b.dataset.id; });
+    const j = b.dataset.move === 'up' ? i - 1 : i + 1;
+    if (j < 1 || j >= ITEMS.length) return;
+    const tmp = ITEMS[i]; ITEMS[i] = ITEMS[j]; ITEMS[j] = tmp;
+    render();
+    const again = listEl.querySelector('[data-move="' + b.dataset.move + '"][data-id="' + b.dataset.id + '"]');
+    if (again && !again.disabled) again.focus();
+  }
+  if (b.dataset.remove) {
+    ITEMS = ITEMS.filter(function (x) { return x.id !== b.dataset.remove; });
+    render();
+  }
+});
+document.getElementById('addItem').addEventListener('click', function () {
+  customCount += 1;
+  ITEMS.push({ id: 'custom' + customCount, type: 'lump', custom: true, on: true, name: 'New expense', note: '', amount: 5000, overhead: 'yes' });
+  render();
+  const inp = listEl.querySelector('[data-row="custom' + customCount + '"] input[type="text"]');
+  if (inp) { inp.focus(); inp.select(); }
+});
+document.querySelectorAll('[data-preset]').forEach(function (b) {
+  b.addEventListener('click', function () {
+    const customs = ITEMS.filter(function (i) { return i.custom; });
+    if (b.dataset.preset === 'wish') { ITEMS = makeItems().concat(customs); }
+    else { ITEMS = applyPreset(b.dataset.preset, ITEMS); }
+    render();
+  });
+});
+
+// Assumptions
+const AMAP = { cap: 'a-cap', months: 'a-months', indirect: 'a-indirect', fica: 'a-fica', retTerm: 'a-retTerm', retReg: 'a-retReg', health: 'a-health', equip: 'a-equip' };
+Object.keys(AMAP).forEach(function (k) {
+  const el = document.getElementById(AMAP[k]);
+  el.value = A[k];
+  el.addEventListener('input', function () {
+    const v = parseFloat(el.value);
+    A[k] = isNaN(v) ? 0 : v;
+    if (k === 'months') {
+      A.months = Math.max(1, Math.round(A.months));
+      ITEMS.forEach(function (i) { if (i.months) i.months = Math.min(i.months, A.months); });
+      render();
+    } else { update(); }
+  });
+});
+const st = document.getElementById('a-studentTax');
+st.checked = A.studentTax;
+st.addEventListener('change', function () { A.studentTax = st.checked; update(); });
+
+render();
+</script>
+</body>
+</html>
